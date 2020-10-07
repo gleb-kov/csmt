@@ -14,10 +14,10 @@ WIP
 ## TODO
 add simplest c++ utils
 
-add linter script
-
 write initial interface for data structure
 
 get rid of main in src, just lib code
 
 simple unit tests
+
+add crypto contrib
