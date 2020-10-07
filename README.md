@@ -10,7 +10,6 @@ WIP
 
 ## Tests
 
-
 ## TODO
 add simplest c++ utils
 
@@ -19,5 +18,3 @@ write initial interface for data structure
 get rid of main in src, just lib code
 
 simple unit tests
-
-add crypto contrib
