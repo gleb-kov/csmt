@@ -9,7 +9,7 @@ private:
     typedef unsigned int uint32;
 
     const static uint32 sha256_k[];
-    static const unsigned int SHA224_256_BLOCK_SIZE = (512 / 8);
+    static const size_t SHA224_256_BLOCK_SIZE = (512 / 8);
 
 public:
     void init();
@@ -18,7 +18,7 @@ public:
 
     void final(unsigned char *digest);
 
-    static const unsigned int DIGEST_SIZE = (256 / 8);
+    static const size_t DIGEST_SIZE = (256 / 8);
 
 private:
     void transform(const unsigned char *message, unsigned int block_nb);
