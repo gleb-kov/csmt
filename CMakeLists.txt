@@ -23,3 +23,4 @@ set(CRYPTO_SRC
 include_directories(.)
 add_subdirectory(src)
 add_subdirectory(tests)
+add_subdirectory(benchmark)

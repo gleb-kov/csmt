@@ -11,10 +11,14 @@ WIP
 ## Tests
 
 ## TODO
-add simplest c++ utils
+csmt
 
-write initial interface for data structure
+tests
 
-get rid of main in src, just lib code
+benchmarks
 
-simple unit tests
+extra: get rid of main in src, just lib code
+
+extra: mac and win builds ?
+
+extra: experimental build with clang
