@@ -3,18 +3,28 @@
 
 #include <cstdint>
 #include <string>
-#include <utility>
 #include <vector>
 
 #define UNUSED(x) (void)(x)
 
-struct Blob {
-    const uint64_t key_;
-    std::string value_;
+/* WARNING: use it just for samples, not in real code */
+struct DefaultHashPolicy {
+    static std::string leaf_hash(const std::string &leaf_value) {
+        return std::to_string(std::hash<std::string>{}(leaf_value));
+    }
 
-    Blob(int64_t key, std::string value)
-        : key_(key)
-        , value_(std::move(value)) {
+    static std::string merge_hash(const std::string &lhs, const std::string &rhs) {
+        return std::to_string(std::hash<std::string>{}(lhs + rhs));
+    }
+
+    template <typename T>
+    static T leaf_hash(const T &leaf_value) {
+        return std::hash<T>{}(leaf_value);
+    }
+
+    template <typename T>
+    static T merge_hash(const T &lhs, const T &rhs) {
+        return std::hash<T>{}(lhs + rhs);
     }
 };
 
@@ -36,8 +46,38 @@ struct Blob {
  * just hash ?
  */
 
-template <typename HashPolicy>
+/*
+ * Compact sparse merkle tree.
+ *
+ * Basic operations:
+ *  insert(key, value)
+ *  erase(key)
+ *  contains(key)
+ *  membership_proof(key)
+ *
+ * Requirements:
+ *  HashPolicy -- type with static methods leaf_hash and merge_hash.
+ *      leaf_hash to hash all origin elements in CSMT.
+ *      merge_hash to hash two subnodes in CSMT.
+ *
+ *  Type returned by HashPolicy equals to origin type.
+ *
+ *  Key type -- uint64_t.
+ */
+template <typename HashPolicy = DefaultHashPolicy, typename ValueType = std::string>
 class Csmt {
+public:
+    /* Structure that holds key and value as element of merkle tree */
+    struct Blob {
+        const uint64_t key_;
+        ValueType value_;
+
+        Blob(int64_t key, ValueType value)
+            : key_(key)
+            , value_(std::move(value)) {
+        }
+    };
+
 private:
     struct Node {
         Blob blob_;
@@ -56,7 +96,7 @@ private:
             return blob_.key_;
         }
 
-        [[nodiscard]] std::string get_value() const {
+        [[nodiscard]] ValueType get_value() const {
             return blob_.value_;
         }
 
@@ -69,7 +109,6 @@ private:
     using ptr_t = Node *;
 
     ptr_t root_ = nullptr;
-    HashPolicy hash_;
 
 private:
     uint64_t log2(uint64_t num) {
@@ -109,7 +148,7 @@ private:
         uint64_t rkey = rhs->get_key();
         uint64_t key = (lkey < rkey ? rkey : lkey);
 
-        std::string value = HashPolicy::merge_hash(lhs->get_value(), rhs->get_value());
+        ValueType value = HashPolicy::merge_hash(lhs->get_value(), rhs->get_value());
         ptr_t node = make_node(Blob(key, value));
         node->left = lhs;
         node->right = rhs;
@@ -177,9 +216,7 @@ private:
     }
 
 public:
-    explicit Csmt(HashPolicy hash)
-        : hash_(std::move(hash)) {
-    }
+    Csmt() = default;
 
     void insert(const Blob &b) {
         if (root_) {

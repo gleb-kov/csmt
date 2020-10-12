@@ -109,6 +109,7 @@ void SHA256_impl::final(unsigned char *digest) {
     }
 }
 
+// TODO: check if const ref is possible
 std::string SHA256::hash(std::string input) {
     unsigned char digest[SHA256_impl::DIGEST_SIZE];
     memset(digest, 0, SHA256_impl::DIGEST_SIZE);

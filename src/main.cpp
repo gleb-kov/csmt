@@ -9,6 +9,7 @@
 
 int main() {
     std::cout << SHA256::hash("grape") << std::endl;
-//    Csmt c; c.erase(10);
+    Csmt c;
+    c.erase(10);
     return 0;
 }

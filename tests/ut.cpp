@@ -16,10 +16,17 @@ struct HashPolicySHA256 {
 
 TEST(empty, blank_ops) {
     // useful for sanitizer
-    Csmt tree(HashPolicySHA256{});
+    Csmt<HashPolicySHA256> tree;
+
+    ASSERT_FALSE(tree.contains(0));
+    auto proof1 = tree.membership_proof(0);
+    ASSERT_TRUE(proof1.empty());
+
     tree.erase(0);
-    auto empty_proof = tree.membership_proof(0);
-    ASSERT_TRUE(empty_proof.empty());
+
+    ASSERT_FALSE(tree.contains(0));
+    auto proof2 = tree.membership_proof(0);
+    ASSERT_TRUE(proof2.empty());
 }
 
 /*
