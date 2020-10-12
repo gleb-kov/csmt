@@ -40,13 +40,6 @@ struct DefaultHashPolicy {
  */
 
 /*
- * HashPolicy requirements:
- * hash leaf
- * hash node as parent
- * just hash ?
- */
-
-/*
  * Compact sparse merkle tree.
  *
  * Basic operations:
@@ -144,9 +137,9 @@ private:
 
     static ptr_t make_node(ptr_t lhs, ptr_t rhs) {
         // TODO: rewrite me
-        uint64_t lkey = lhs->get_key();
-        uint64_t rkey = rhs->get_key();
-        uint64_t key = (lkey < rkey ? rkey : lkey);
+        uint64_t l_key = lhs->get_key();
+        uint64_t r_key = rhs->get_key();
+        uint64_t key = (l_key < r_key ? r_key : l_key);
 
         ValueType value = HashPolicy::merge_hash(lhs->get_value(), rhs->get_value());
         ptr_t node = make_node(Blob(key, value));
@@ -160,12 +153,23 @@ private:
         if (root->is_leaf()) {
             return insert_leaf(root, blob);
         }
-        uint64_t ldist = distance(blob.key_, root->left->get_key());
-        uint64_t rdist = distance(blob.key_, root->right->get_key());
-        if (ldist == rdist) {
-            // FIXME
+
+        uint64_t l_key = root->left->get_key();
+        uint64_t r_key = root->right->get_key();
+        uint64_t l_dist = distance(blob.key_, l_key);
+        uint64_t r_dist = distance(blob.key_, r_key);
+
+        if (l_dist == r_dist) {
+            ptr_t new_node = make_node(blob);
+            uint64_t min_key = (l_key < r_key ? l_key : r_key);
+            if (blob.key_ < min_key) {
+                return make_node(new_node, root);
+            } else {
+                return make_node(root, new_node);
+            }
         }
-        if (ldist < rdist) {
+
+        if (l_dist < r_dist) {
             root->left = insert(root->left, blob);
         } else {
             root->right = insert(root->right, blob);
@@ -200,18 +204,35 @@ private:
                 return root->left;
             }
         } else {
-            uint64_t ldist = distance(key, root->left->get_key());
-            uint64_t rdist = distance(key, root->right->get_key());
-            if (ldist == rdist) {
+            uint64_t l_dist = distance(key, root->left->get_key());
+            uint64_t r_dist = distance(key, root->right->get_key());
+
+            if (l_dist == r_dist) {
                 return root;
             }
-            if (ldist < rdist) {
+            if (l_dist < r_dist) {
                 root->left = erase(root->left, key);
             } else {
                 root->right = erase(root->right, key);
             }
             ptr_t new_node = make_node(root->left, root->right);
             return new_node;
+        }
+    }
+
+    bool contains(ptr_t root, uint64_t key) {
+        if (root->check_for_leaf(key)) {
+            return true;
+        }
+        uint64_t l_dist = distance(key, root->left->get_key());
+        uint64_t r_dist = distance(key, root->right->get_key());
+        if (l_dist == r_dist) {
+            return false;
+        }
+        if (l_dist < r_dist) {
+            return contains(root->left, key);
+        } else {
+            return contains(root->right, key);
         }
     }
 
@@ -233,9 +254,11 @@ public:
     }
 
     bool contains(uint64_t key) {
-        // FIXME
-        UNUSED(key);
-        return false;
+        if (root_) {
+            return contains(root_, key);
+        } else {
+            return false;
+        }
     }
 
     std::vector<Blob> membership_proof(uint64_t key) {
