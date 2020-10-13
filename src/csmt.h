@@ -31,12 +31,10 @@ struct DefaultHashPolicy {
 /*
  * TODO:
  * custom allocator
- * fix raw pointers
- * set deleted pointers to nullptr
  * rewrite with no recursion
- * deallocate root?
  * std::move ?
  * blob as aggregator ?
+ * leaf_hash?
  */
 
 /*
@@ -57,7 +55,7 @@ struct DefaultHashPolicy {
  *
  *  Key type -- uint64_t.
  */
-template <typename HashPolicy = DefaultHashPolicy, typename ValueType = std::string>
+template<typename HashPolicy = DefaultHashPolicy, typename ValueType = std::string>
 class Csmt {
 public:
     /* Structure that holds key and value as element of merkle tree */
@@ -65,24 +63,25 @@ public:
         const uint64_t key_;
         ValueType value_;
 
-        Blob(int64_t key, ValueType value)
-            : key_(key)
-            , value_(std::move(value)) {
+        Blob(uint64_t key, ValueType value)
+            : key_(key), value_(std::move(value)) {
         }
     };
 
 private:
     struct Node {
-        Blob blob_;
-        Node *left = nullptr;
-        Node *right = nullptr;
+        using ptr_t = std::unique_ptr<Node>;
 
-        explicit Node(Blob blob)
-            : blob_(std::move(blob)) {
+        Blob blob_;
+        ptr_t left_ = nullptr;
+        ptr_t right_ = nullptr;
+
+        explicit Node(Blob blob, ptr_t left, ptr_t right)
+                : blob_(std::move(blob)), left_(std::move(left)), right_(std::move(right)) {
         }
 
         [[nodiscard]] bool is_leaf() const {
-            return left == nullptr && right == nullptr;
+            return left_ == nullptr && right_ == nullptr;
         }
 
         [[nodiscard]] uint64_t get_key() const {
@@ -92,21 +91,17 @@ private:
         [[nodiscard]] ValueType get_value() const {
             return blob_.value_;
         }
-
-        [[nodiscard]] bool check_for_leaf(uint64_t key) const {
-            return (left->is_leaf() && left->get_key() == key) ||
-                   (right->is_leaf() && right->get_key() == key);
-        }
     };
 
-    using ptr_t = Node *;
+    using ptr_t = typename Node::ptr_t;
 
     ptr_t root_ = nullptr;
+    size_t size_ = 0;
 
 private:
     uint64_t log2(uint64_t num) {
         // TODO: add fast log2 and benchmark it
-        int64_t res = 0;
+        uint64_t res = 0;
         while (num) {
             num >>= 1u;
             ++res;
@@ -119,43 +114,31 @@ private:
     }
 
 private:
-    static ptr_t alloc_node(const Blob &blob) {
-        return new Node(blob);
-    }
-
-    static void dealloc_node(ptr_t node) {
-        delete node;
-    }
-
     static ptr_t make_node(const Blob &blob) {
-        // TODO: rewrite me
-        ptr_t node = alloc_node(blob);
-        node->left = nullptr;
-        node->right = nullptr;
-        return node;
+        return std::make_unique<Node>(blob, nullptr, nullptr);
     }
 
-    static ptr_t make_node(ptr_t lhs, ptr_t rhs) {
-        // TODO: rewrite me
+    static ptr_t make_node(ptr_t &lhs, ptr_t &rhs) {
         uint64_t l_key = lhs->get_key();
         uint64_t r_key = rhs->get_key();
         uint64_t key = (l_key < r_key ? r_key : l_key);
 
         ValueType value = HashPolicy::merge_hash(lhs->get_value(), rhs->get_value());
-        ptr_t node = make_node(Blob(key, value));
-        node->left = lhs;
-        node->right = rhs;
-        return node;
+        return std::make_unique<Node>(Blob(key, value), std::move(lhs), std::move(rhs));
+    }
+
+    static ptr_t make_node(ptr_t &root) {
+        return make_node(root->left_, root->right_);
     }
 
 private:
-    ptr_t insert(ptr_t root, const Blob &blob) {
+    ptr_t insert(ptr_t &root, const Blob &blob) {
         if (root->is_leaf()) {
             return insert_leaf(root, blob);
         }
 
-        uint64_t l_key = root->left->get_key();
-        uint64_t r_key = root->right->get_key();
+        uint64_t l_key = root->left_->get_key();
+        uint64_t r_key = root->right_->get_key();
         uint64_t l_dist = distance(blob.key_, l_key);
         uint64_t r_dist = distance(blob.key_, r_key);
 
@@ -170,22 +153,21 @@ private:
         }
 
         if (l_dist < r_dist) {
-            root->left = insert(root->left, blob);
+            root->left_ = insert(root->left_, blob);
         } else {
-            root->right = insert(root->right, blob);
+            root->right_ = insert(root->right_, blob);
         }
-        ptr_t new_node = make_node(root->left, root->right);
-        return new_node;
+        return make_node(root);
     }
 
-    ptr_t insert_leaf(ptr_t leaf, const Blob &blob) {
+    ptr_t insert_leaf(ptr_t &leaf, const Blob &blob) {
         uint64_t leaf_key = leaf->get_key();
         if (blob.key_ == leaf_key) {
             // update existing value
-            leaf->blob = blob;
-            return leaf;
+            leaf->blob_.value_ = blob.value_;
+            return std::move(leaf);
         }
-
+        ++size_;
         ptr_t new_node = make_node(blob);
         if (blob.key_ < leaf_key) {
             return make_node(new_node, leaf);
@@ -194,56 +176,68 @@ private:
         }
     }
 
-    ptr_t erase(ptr_t root, uint64_t key) {
-        if (root->check_for_leaf(key)) {
-            if (root->left->get_key() == key) {
-                dealloc_node(root->left);
-                return root->right;
+    ptr_t erase(ptr_t &root, uint64_t key) {
+        if (root->is_leaf()) {
+            if (root->get_key() == key) {
+                --size_;
+                return nullptr;
             } else {
-                dealloc_node(root->right);
-                return root->left;
+                return std::move(root);
             }
-        } else {
-            uint64_t l_dist = distance(key, root->left->get_key());
-            uint64_t r_dist = distance(key, root->right->get_key());
-
-            if (l_dist == r_dist) {
-                return root;
-            }
-            if (l_dist < r_dist) {
-                root->left = erase(root->left, key);
-            } else {
-                root->right = erase(root->right, key);
-            }
-            ptr_t new_node = make_node(root->left, root->right);
-            return new_node;
         }
+        if (root->left_ && root->left_->is_leaf() && root->left_->get_key() == key) {
+            --size_;
+            return std::move(root->right_);
+        }
+        if (root->right_ && root->right_->is_leaf() && root->right_->get_key() == key) {
+            --size_;
+            return std::move(root->left_);
+        }
+
+        uint64_t l_dist = distance(key, root->left_->get_key());
+        uint64_t r_dist = distance(key, root->right_->get_key());
+
+        if (l_dist == r_dist) {
+            return std::move(root);
+        }
+
+        // in worst case the same pointer returned with move
+        if (l_dist < r_dist) {
+            root->left_ = erase(root->left_, key);
+        } else {
+            root->right_ = erase(root->right_, key);
+        }
+        return make_node(root);
+
     }
 
-    bool contains(ptr_t root, uint64_t key) {
-        if (root->check_for_leaf(key)) {
-            return true;
+    /*bool contains(ptr_t root, uint64_t key) {
+        if (root->is_leaf()) {
+            return root->get_key() == key;
         }
-        uint64_t l_dist = distance(key, root->left->get_key());
-        uint64_t r_dist = distance(key, root->right->get_key());
+        uint64_t left_key = root->left->get_key();
+        uint64_t right_key = root->right->get_key();
+        uint64_t l_dist = distance(key, left_key);
+        uint64_t r_dist = distance(key, right_key);
         if (l_dist == r_dist) {
-            return false;
+            return false; // TODO: decide branch
         }
         if (l_dist < r_dist) {
             return contains(root->left, key);
         } else {
             return contains(root->right, key);
         }
-    }
+    }*/
 
 public:
     Csmt() = default;
 
-    void insert(const Blob &b) {
+    void insert(uint64_t key, const ValueType &value) {
         if (root_) {
-            root_ = insert(root_, b);
+            root_ = insert(root_, {key, value});
         } else {
-            root_ = make_node(b);
+            ++size_;
+            root_ = make_node({key, value});
         }
     }
 
@@ -253,19 +247,25 @@ public:
         }
     }
 
-    bool contains(uint64_t key) {
+    /*bool contains(uint64_t key) const {
         if (root_) {
             return contains(root_, key);
         } else {
             return false;
         }
-    }
+    }*/
 
-    std::vector<Blob> membership_proof(uint64_t key) {
+    std::vector<ValueType> membership_proof(uint64_t key) const {
         // FIXME
         UNUSED(key);
         return {};
     }
+
+    size_t size() const {
+        return size_;
+    }
+
+    ~Csmt() = default;
 };
 
 #endif // CSMT_CSMT_H
