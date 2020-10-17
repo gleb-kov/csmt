@@ -260,6 +260,12 @@ public:
         }
     }
 
+    std::vector<ValueType> membership_proof(uint64_t key) const {
+        // FIXME
+        UNUSED(key);
+        return {};
+    }
+
     void erase(uint64_t key) {
         if (root_) {
             root_ = erase(root_, key);
@@ -272,12 +278,6 @@ public:
         } else {
             return false;
         }
-    }
-
-    std::vector<ValueType> membership_proof(uint64_t key) const {
-        // FIXME
-        UNUSED(key);
-        return {};
     }
 
     size_t size() const {
