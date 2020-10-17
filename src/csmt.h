@@ -2,6 +2,7 @@
 #define CSMT_CSMT_H
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -55,7 +56,9 @@ struct DefaultHashPolicy {
  *
  *  Key type -- uint64_t.
  */
-template<typename HashPolicy = DefaultHashPolicy, typename ValueType = std::string>
+
+template <typename HashPolicy = DefaultHashPolicy, typename ValueType = std::string
+          /*, typename Alloc = std::allocator<void>*/>
 class Csmt {
 public:
     /* Structure that holds key and value as element of merkle tree */
@@ -64,7 +67,8 @@ public:
         ValueType value_;
 
         Blob(uint64_t key, ValueType value)
-            : key_(key), value_(std::move(value)) {
+            : key_(key)
+            , value_(std::move(value)) {
         }
     };
 
@@ -77,7 +81,9 @@ private:
         ptr_t right_ = nullptr;
 
         explicit Node(Blob blob, ptr_t left, ptr_t right)
-                : blob_(std::move(blob)), left_(std::move(left)), right_(std::move(right)) {
+            : blob_(std::move(blob))
+            , left_(std::move(left))
+            , right_(std::move(right)) {
         }
 
         [[nodiscard]] bool is_leaf() const {
@@ -95,18 +101,31 @@ private:
 
     using ptr_t = typename Node::ptr_t;
 
+    // using NodeAlloc = typename std::allocator_traits<Alloc>
+    //      ::template rebind_alloc<Node>;
+    // using NodeAllocTraits = std::allocator_traits<NodeAlloc>;
+
     ptr_t root_ = nullptr;
     size_t size_ = 0;
 
 private:
     uint64_t log2(uint64_t num) {
-        // TODO: add fast log2 and benchmark it
-        uint64_t res = 0;
-        while (num) {
-            num >>= 1u;
-            ++res;
-        }
-        return res;
+#ifdef __GNUC__
+        return ((unsigned)(8 * sizeof(unsigned long long) - __builtin_clzll((num)) - 1));
+#else
+        static constexpr uint64_t table[64] = {
+            0,  58, 1,  59, 47, 53, 2,  60, 39, 48, 27, 54, 33, 42, 3,  61,
+            51, 37, 40, 49, 18, 28, 20, 55, 30, 34, 11, 43, 14, 22, 4,  62,
+            57, 46, 52, 38, 26, 32, 41, 50, 36, 17, 19, 29, 10, 13, 21, 56,
+            45, 25, 31, 35, 16, 9,  12, 44, 24, 15, 8,  23, 7,  6,  5,  63};
+        num |= num >> 1u;
+        num |= num >> 2u;
+        num |= num >> 4u;
+        num |= num >> 8u;
+        num |= num >> 16u;
+        num |= num >> 32u;
+        return table[(num * 0x03f6eaf2cd271461) >> 58u];
+#endif
     }
 
     uint64_t distance(uint64_t lhs, uint64_t rhs) {
@@ -208,7 +227,6 @@ private:
             root->right_ = erase(root->right_, key);
         }
         return make_node(root);
-
     }
 
     /*bool contains(ptr_t root, uint64_t key) {

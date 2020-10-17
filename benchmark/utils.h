@@ -2,11 +2,33 @@
 #define CSMT_UTILS_H
 
 #include <chrono>
+#include <string>
+#include <random>
+
+namespace bench_utils {
+    void escape(void* p) {
+        asm volatile("" : : "g"(p) : "memory");
+    }
+
+    void clobber() {
+        asm volatile("" : : : "memory");
+    }
+
+    template <typename T>
+    inline void do_not_optimize(const T &val) {
+        asm volatile("" : : "r,m"(val) : "memory");
+    }
+
+    template <typename T>
+    inline void do_not_optimize(T &val) {
+        asm volatile("" : "+m,r"(val) : : "memory");
+    }
+}
 
 namespace time_utils {
 
     using benchmark_clock_t = std::chrono::high_resolution_clock;
-    using benchmark_duration_t = std::chrono::seconds;
+    using benchmark_duration_t = std::chrono::milliseconds;
 
     template <typename Clock = benchmark_clock_t>
     class stage_timer {
@@ -67,6 +89,27 @@ namespace time_utils {
         }
     };
 
+}
+
+namespace string_utils {
+    std::string generate_random_string(size_t size) {
+        std::random_device random_device;
+        std::mt19937 generator;
+        std::uniform_int_distribution<> distrib(0, 26 - 1 + 26 - 1 + 10 - 1);
+
+        std::string result;
+        for (size_t i = 0; i < size; ++i) {
+            int mchar = distrib(generator);
+            if (mchar < 10) {
+                result += (char)('0' + mchar);
+            } else if (mchar < 36) {
+                result += (char)('a' - 10 + mchar);
+            } else {
+                result += (char)('A' - 36 + mchar);
+            }
+        }
+        return result;
+    }
 }
 
 #endif // CSMT_UTILS_H

@@ -20,4 +20,4 @@ endif()
 
 add_executable(dummy_exec main.cpp ${CRYPTO_SRC} csmt.h)
 
-add_dependencies(dummy_exec format)
+# add_dependencies(dummy_exec format)
