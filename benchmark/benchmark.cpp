@@ -143,7 +143,7 @@ void spam_contains() {
 
 template <size_t VALUE_SIZE, size_t KEYS = DEF_KEYS>
 void spam_all() {
-    std::cout << "BENCH SPAM ERASE. Operations: " << KEYS
+    std::cout << "BENCH SPAM ALL. Operations: " << KEYS
               << ". Value size: " << VALUE_SIZE << std::endl;
 
     // add blocks before measure erase()
