@@ -44,22 +44,20 @@ struct DefaultHashPolicy {
  *      leaf_hash to hash all origin elements in CSMT.
  *      merge_hash to hash two sub-nodes in CSMT.
  *
- *  ValueType -- type of stored values.
- *  Type returned by HashPolicy equals ValueType.
- *
  *  Key type -- uint64_t.
  */
 
-template <typename HashPolicy = DefaultHashPolicy, typename ValueType = std::string
-          /*, typename Alloc = std::allocator<void>*/>  // TODO
+template <typename HashPolicy = DefaultHashPolicy, typename HashType = std::string,
+          typename ValueType = std::string
+          /*, typename Alloc = std::allocator<void>*/> // TODO
 class Csmt {
 public:
     /* Structure that holds key and value as element of merkle tree */
     struct Blob {
         const uint64_t key_;
-        ValueType value_;
+        HashType value_;
 
-        Blob(uint64_t key, ValueType value)
+        Blob(uint64_t key, HashType value)
             : key_(key)
             , value_(std::move(value)) {
         }
@@ -87,7 +85,7 @@ private:
             return blob_.key_;
         }
 
-        [[nodiscard]] ValueType get_value() const {
+        [[nodiscard]] HashType get_value() const {
             return blob_.value_;
         }
     };
@@ -122,7 +120,8 @@ private:
     }
 
     static uint64_t distance(uint64_t lhs, uint64_t rhs) {
-        if (lhs == rhs) return 0;
+        if (lhs == rhs)
+            return 0;
         return log2(lhs ^ rhs);
     }
 
@@ -136,7 +135,7 @@ private:
         uint64_t r_key = rhs->get_key();
         uint64_t key = (l_key < r_key ? r_key : l_key);
 
-        ValueType value = HashPolicy::merge_hash(lhs->get_value(), rhs->get_value());
+        HashType value = HashPolicy::merge_hash(lhs->get_value(), rhs->get_value());
         return std::make_unique<Node>(Blob(key, value), std::move(lhs), std::move(rhs));
     }
 
@@ -261,7 +260,7 @@ public:
         }
     }
 
-    std::vector<ValueType> membership_proof(uint64_t key) const {
+    std::vector<HashType> membership_proof(uint64_t key) const {
         // FIXME
         UNUSED(key);
         return {};

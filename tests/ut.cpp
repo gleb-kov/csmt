@@ -2,7 +2,9 @@
 #include "contrib/gtest/gtest.h"
 #include "src/csmt.h"
 
+#include <bitset>
 #include <functional>
+#include <random>
 
 struct IdentityHashPolicy {
     static std::string leaf_hash(std::string leaf_value) {
@@ -131,9 +133,35 @@ TEST(stress, comeback) {
     }
 }
 
-/*
- * TEST CASES:
- * pool with keys and data, hold everything in map, random operations. ? how to verify proof?
- *
- * any corner cases?
- */
+TEST(stress, pool) {
+    constexpr size_t KEYS = 10;
+    constexpr size_t OPERATIONS = 20;
+
+    std::random_device random_device;
+    std::mt19937 generator;
+
+    std::uniform_int_distribution<> op_gen(0, 2);
+    std::uniform_int_distribution<uint64_t> key_gen(0, KEYS - 1);
+
+    std::function<std::string(size_t)> value_gen = [](size_t key_index) {
+        return "VALUE" + std::to_string(key_index);
+    };
+
+    Csmt tree;
+    std::bitset<KEYS> in_tree;
+
+    for (size_t op_index = 0; op_index < OPERATIONS; ++op_index) {
+        int op = op_gen(generator);
+        uint64_t key = key_gen(generator);
+
+        if (op == 0) {
+            tree.insert(key, value_gen(key));
+            in_tree[key] = true;
+        } else if (op == 1) {
+            tree.erase(key);
+            in_tree[key] = false;
+        } else if (op == 2) {
+            ASSERT_EQ(in_tree[key], tree.contains(key));
+        }
+    }
+}
