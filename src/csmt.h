@@ -30,15 +30,6 @@ struct DefaultHashPolicy {
 };
 
 /*
- * TODO:
- * custom allocator
- * rewrite with no recursion
- * std::move ?
- * blob as aggregator ?
- * leaf_hash?
- */
-
-/*
  * Compact sparse merkle tree.
  *
  * Basic operations:
@@ -52,13 +43,14 @@ struct DefaultHashPolicy {
  *      leaf_hash to hash all origin elements in CSMT.
  *      merge_hash to hash two subnodes in CSMT.
  *
- *  Type returned by HashPolicy equals to origin type.
+ *  ValueType -- type of stored values.
+ *  Type returned by HashPolicy equals ValueType.
  *
  *  Key type -- uint64_t.
  */
 
 template <typename HashPolicy = DefaultHashPolicy, typename ValueType = std::string
-          /*, typename Alloc = std::allocator<void>*/>
+          /*, typename Alloc = std::allocator<void>*/>  // TODO
 class Csmt {
 public:
     /* Structure that holds key and value as element of merkle tree */
@@ -109,7 +101,7 @@ private:
     size_t size_ = 0;
 
 private:
-    uint64_t log2(uint64_t num) {
+    static uint64_t log2(uint64_t num) {
 #ifdef __GNUC__
         return ((unsigned)(8 * sizeof(unsigned long long) - __builtin_clzll((num)) - 1));
 #else
@@ -128,7 +120,7 @@ private:
 #endif
     }
 
-    uint64_t distance(uint64_t lhs, uint64_t rhs) {
+    static uint64_t distance(uint64_t lhs, uint64_t rhs) {
         return log2(lhs ^ rhs);
     }
 
@@ -229,23 +221,23 @@ private:
         return make_node(root);
     }
 
-    /*bool contains(ptr_t root, uint64_t key) {
+    bool contains(const ptr_t &root, uint64_t key) const {
         if (root->is_leaf()) {
             return root->get_key() == key;
         }
-        uint64_t left_key = root->left->get_key();
-        uint64_t right_key = root->right->get_key();
+        uint64_t left_key = root->left_->get_key();
+        uint64_t right_key = root->right_->get_key();
         uint64_t l_dist = distance(key, left_key);
         uint64_t r_dist = distance(key, right_key);
         if (l_dist == r_dist) {
-            return false; // TODO: decide branch
+            return false;
         }
         if (l_dist < r_dist) {
-            return contains(root->left, key);
+            return contains(root->left_, key);
         } else {
-            return contains(root->right, key);
+            return contains(root->right_, key);
         }
-    }*/
+    }
 
 public:
     Csmt() = default;
@@ -265,13 +257,13 @@ public:
         }
     }
 
-    /*bool contains(uint64_t key) const {
+    bool contains(uint64_t key) const {
         if (root_) {
             return contains(root_, key);
         } else {
             return false;
         }
-    }*/
+    }
 
     std::vector<ValueType> membership_proof(uint64_t key) const {
         // FIXME

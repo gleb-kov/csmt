@@ -27,7 +27,7 @@ struct IdentityHashPolicy {
 template <typename HP, typename VT>
 bool look_for_key(const Csmt<HP, VT> &tree, uint64_t key, const std::vector<VT> &proof = {}) {
     bool empty = proof.empty();
-    bool contains = /*tree.contains(key)*/ !empty; // FIXME
+    bool contains = tree.contains(key);
     return (empty != contains) && tree.membership_proof(key) == proof;
 }
 

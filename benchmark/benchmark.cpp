@@ -27,6 +27,18 @@
     using tree_type = Csmt<>;
 #endif
 
+/*
+ * TODO:
+ *
+ * spam insert
+ * spam erase
+ * spam contains - existing or not
+ *
+ * rand operations
+ *
+ * ! different string size, compare with bench_utils results
+ */
+
 int main() {
     std::cout << "RUN CSMT BENCHMARKS. HASH POLICY: " << POLICY_STR << std::endl << std::endl;
 }
