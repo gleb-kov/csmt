@@ -3,16 +3,6 @@
 
 #include "contrib/crypto/sha256.h"
 
-struct IdentityHashPolicy {
-    static std::string leaf_hash(std::string leaf_value) {
-        return leaf_value;
-    }
-
-    static std::string merge_hash(const std::string& lhs, const std::string& rhs) {
-        return lhs + rhs;
-    }
-};
-
 struct HashPolicySHA256 {
     static std::string leaf_hash(std::string leaf_value) {
         return SHA256::hash(std::move(leaf_value));

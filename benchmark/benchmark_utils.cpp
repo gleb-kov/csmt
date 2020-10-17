@@ -51,7 +51,7 @@ void bench_log2() {
             total += res;
         }
         auto elapsed_ms = st.stop_stage<std::chrono::nanoseconds>().count();
-        std::cout << "ELAPSED: " << elapsed_ms * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ms * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 
     {
@@ -68,7 +68,7 @@ void bench_log2() {
             total += res;
         }
         auto elapsed_ms = st.stop_stage<std::chrono::nanoseconds>().count();
-        std::cout << "ELAPSED: " << elapsed_ms * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ms * 1.0 / ITERATIONS << " ns." << std::endl;
 #endif
     }
 
@@ -82,7 +82,7 @@ void bench_log2() {
             total += res;
         }
         auto elapsed_ms = st.stop_stage<std::chrono::nanoseconds>().count();
-        std::cout << "ELAPSED: " << elapsed_ms * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ms * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 }
 
@@ -101,7 +101,7 @@ void bench_sha256() {
             bench_utils::clobber();
             elapsed_ns += st.stop_stage<std::chrono::nanoseconds>().count();
         }
-        std::cout << "ELAPSED: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 
     {
@@ -116,7 +116,7 @@ void bench_sha256() {
             bench_utils::clobber();
             elapsed_ns += st.stop_stage<std::chrono::nanoseconds>().count();
         }
-        std::cout << "ELAPSED: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 
     {
@@ -131,7 +131,7 @@ void bench_sha256() {
             bench_utils::clobber();
             elapsed_ns += st.stop_stage<std::chrono::nanoseconds>().count();
         }
-        std::cout << "ELAPSED: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 
     {
@@ -146,7 +146,7 @@ void bench_sha256() {
             bench_utils::clobber();
             elapsed_ns += st.stop_stage<std::chrono::nanoseconds>().count();
         }
-        std::cout << "ELAPSED: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 
     {
@@ -161,7 +161,7 @@ void bench_sha256() {
             bench_utils::clobber();
             elapsed_ns += st.stop_stage<std::chrono::nanoseconds>().count();
         }
-        std::cout << "ELAPSED: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 }
 
@@ -179,7 +179,7 @@ void bench_std_hash() {
             bench_utils::do_not_optimize(h = std::hash<std::string>{}(str));
             elapsed_ns += st.stop_stage<std::chrono::nanoseconds>().count();
         }
-        std::cout << "ELAPSED: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 
     {
@@ -193,7 +193,7 @@ void bench_std_hash() {
             bench_utils::do_not_optimize(h = std::hash<std::string>{}(str));
             elapsed_ns += st.stop_stage<std::chrono::nanoseconds>().count();
         }
-        std::cout << "ELAPSED: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 
     {
@@ -207,7 +207,7 @@ void bench_std_hash() {
             bench_utils::do_not_optimize(h = std::hash<std::string>{}(str));
             elapsed_ns += st.stop_stage<std::chrono::nanoseconds>().count();
         }
-        std::cout << "ELAPSED: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 
     {
@@ -221,7 +221,7 @@ void bench_std_hash() {
             bench_utils::do_not_optimize(h = std::hash<std::string>{}(str));
             elapsed_ns += st.stop_stage<std::chrono::nanoseconds>().count();
         }
-        std::cout << "ELAPSED: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 
     {
@@ -235,7 +235,7 @@ void bench_std_hash() {
             bench_utils::do_not_optimize(h = std::hash<std::string>{}(str));
             elapsed_ns += st.stop_stage<std::chrono::nanoseconds>().count();
         }
-        std::cout << "ELAPSED: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
+        std::cout << "Average: " << elapsed_ns * 1.0 / ITERATIONS << " ns." << std::endl;
     }
 }
 
