@@ -30,18 +30,19 @@ struct DefaultHashPolicy {
 };
 
 /*
- * Compact sparse merkle tree.
+ * Compact Sparse Merkle Tree.
  *
  * Basic operations:
  *  insert(key, value)
+ *  membership_proof(key)
  *  erase(key)
  *  contains(key)
- *  membership_proof(key)
+ *  size()
  *
  * Requirements:
  *  HashPolicy -- type with static methods leaf_hash and merge_hash.
  *      leaf_hash to hash all origin elements in CSMT.
- *      merge_hash to hash two subnodes in CSMT.
+ *      merge_hash to hash two sub-nodes in CSMT.
  *
  *  ValueType -- type of stored values.
  *  Type returned by HashPolicy equals ValueType.
