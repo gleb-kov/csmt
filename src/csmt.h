@@ -121,6 +121,7 @@ private:
     }
 
     static uint64_t distance(uint64_t lhs, uint64_t rhs) {
+        if (lhs == rhs) return 0;
         return log2(lhs ^ rhs);
     }
 
@@ -227,6 +228,14 @@ private:
         }
         uint64_t left_key = root->left_->get_key();
         uint64_t right_key = root->right_->get_key();
+
+        if (root->left_ && root->left_->is_leaf() && root->left_->get_key() == key) {
+            return true;
+        }
+        if (root->right_ && root->right_->is_leaf() && root->right_->get_key() == key) {
+            return true;
+        }
+
         uint64_t l_dist = distance(key, left_key);
         uint64_t r_dist = distance(key, right_key);
         if (l_dist == r_dist) {
@@ -244,10 +253,10 @@ public:
 
     void insert(uint64_t key, const ValueType &value) {
         if (root_) {
-            root_ = insert(root_, {key, value});
+            root_ = insert(root_, {key, HashPolicy::leaf_hash(value)});
         } else {
             ++size_;
-            root_ = make_node({key, value});
+            root_ = make_node({key, HashPolicy::leaf_hash(value)});
         }
     }
 
