@@ -28,8 +28,7 @@ int main() {
             bool tree_verdict = tree.contains(key);
             bool set_verdict = in_tree.find(key) != in_tree.end();
 
-            std::cout << "CONTAINS " << key << ' ' << tree_verdict << ' ' << set_verdict << std::endl;
-
+            // std::cout << "CONTAINS " << key << ' ' << tree_verdict << ' ' << set_verdict << std::endl;
 
             if (tree_verdict != set_verdict) {
                 std::cerr << "FAILED. Operation: index " << op_index <<

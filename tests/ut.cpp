@@ -115,6 +115,18 @@ TEST(basic, not_intersects) {
     ASSERT_TRUE(look_for_key(tree, 3, {}));
 }
 
+TEST(basic, insert_trick) {
+    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
+        return "VALUE" + std::to_string(key_index);
+    };
+
+    Csmt<> tree;
+    tree.insert(12, value_gen(12));
+    tree.insert(13, value_gen(13));
+    tree.insert(12, value_gen(12));
+    ASSERT_TRUE(tree.contains(13));
+}
+
 TEST(stress, comeback) {
     Csmt<> tree;
     constexpr size_t KEYS = 60;
@@ -150,20 +162,8 @@ TEST(stress, comeback) {
     }
 }
 
-TEST(stress, debug) {
-    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
-        return "VALUE" + std::to_string(key_index);
-    };
-
-    Csmt<> tree;
-    tree.insert(12, value_gen(12));
-    tree.insert(13, value_gen(13));
-    tree.insert(12, value_gen(12));
-    ASSERT_TRUE(tree.contains(13));
-}
-
 TEST(stress, pool) {
-    constexpr size_t KEYS = 30;
+    constexpr size_t KEYS = 70;
     constexpr size_t OPERATIONS = 10000;
 
     std::random_device random_device;
@@ -178,6 +178,7 @@ TEST(stress, pool) {
 
     Csmt<> tree;
     std::bitset<KEYS> in_tree;
+    size_t in_tree_size = 0;
 
     for (size_t op_index = 0; op_index < OPERATIONS; ++op_index) {
         int op = op_gen(generator);
@@ -186,15 +187,22 @@ TEST(stress, pool) {
         if (op == 0) {
             // std::cerr << "insert " << key << std::endl;
             tree.insert(key, value_gen(key));
-            in_tree[key] = true;
+            if (!in_tree[key]) {
+                in_tree[key] = true;
+                ++in_tree_size;
+            }
         } else if (op == 1) {
             // std::cerr << "erase " << key << std::endl;
             tree.erase(key);
-            in_tree[key] = false;
+            if (in_tree[key]) {
+                in_tree[key] = false;
+                --in_tree_size;
+            }
         } else if (op == 2) {
             bool verdict = tree.contains(key);
             // std::cerr << "contains " << key << ' ' << verdict << std::endl;
             ASSERT_EQ(in_tree[key], verdict);
+            ASSERT_EQ(in_tree_size, tree.size());
         }
     }
 }

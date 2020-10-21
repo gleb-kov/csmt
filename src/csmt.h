@@ -161,12 +161,23 @@ private:
 
         uint64_t l_key = root->left_->get_key();
         uint64_t r_key = root->right_->get_key();
+
+        if (root->left_ && root->left_->is_leaf() && l_key == blob.key_) {
+            root->left_ = insert_leaf(root->left_, blob);
+            return std::move(root);
+        }
+        if (root->right_ && root->right_->is_leaf() && r_key == blob.key_) {
+            root->right_ = insert_leaf(root->right_, blob);
+            return std::move(root);
+        }
+
         uint64_t l_dist = distance(blob.key_, l_key);
         uint64_t r_dist = distance(blob.key_, r_key);
 
         if (l_dist == r_dist) {
             ptr_t new_node = make_node(blob);
             uint64_t min_key = (l_key < r_key ? l_key : r_key);
+            ++size_;
             if (blob.key_ < min_key) {
                 return make_node(new_node, root);
             } else {
@@ -208,19 +219,22 @@ private:
             return false;
         }
 
-        if (root->left_ && root->left_->is_leaf() && root->left_->get_key() == key) {
+        uint64_t l_key = root->left_->get_key();
+        uint64_t r_key = root->right_->get_key();
+
+        if (root->left_ && root->left_->is_leaf() && l_key == key) {
             audit_path.push_back(root->left_->get_value());
             audit_path.push_back(root->get_value());
             return true;
         }
-        if (root->right_ && root->right_->is_leaf() && root->right_->get_key() == key) {
+        if (root->right_ && root->right_->is_leaf() && r_key == key) {
             audit_path.push_back(root->right_->get_value());
             audit_path.push_back(root->get_value());
             return true;
         }
 
-        uint64_t l_dist = distance(key, root->left_->get_key());
-        uint64_t r_dist = distance(key, root->right_->get_key());
+        uint64_t l_dist = distance(key, l_key);
+        uint64_t r_dist = distance(key, r_key);
 
         if (l_dist == r_dist) {
             return false;
