@@ -14,10 +14,10 @@ add_custom_target(format
         COMMENT "Finish clang format"
         )
 
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -pedantic -Wextra")
-endif()
+endif ()
 
-add_executable(dummy_exec main.cpp ${CRYPTO_SRC} csmt.h)
+add_executable(dummy_exec main.cpp ${CRYPTO_SRC} csmt.h utils/mingw_patch.h)
 
 # add_dependencies(dummy_exec format)

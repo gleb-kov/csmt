@@ -1,6 +1,8 @@
 #ifndef CSMT_CSMT_H
 #define CSMT_CSMT_H
 
+#include "utils/mingw_patch.h"
+
 #include <cstdint>
 #include <memory>
 #include <string>
