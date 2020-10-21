@@ -150,9 +150,21 @@ TEST(stress, comeback) {
     }
 }
 
+TEST(stress, debug) {
+    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
+        return "VALUE" + std::to_string(key_index);
+    };
+
+    Csmt<> tree;
+    tree.insert(12, value_gen(12));
+    tree.insert(13, value_gen(13));
+    tree.insert(12, value_gen(12));
+    ASSERT_TRUE(tree.contains(13));
+}
+
 TEST(stress, pool) {
     constexpr size_t KEYS = 30;
-    constexpr size_t OPERATIONS = 1000;
+    constexpr size_t OPERATIONS = 10000;
 
     std::random_device random_device;
     std::mt19937 generator;
@@ -160,7 +172,7 @@ TEST(stress, pool) {
     std::uniform_int_distribution<> op_gen(0, 2);
     std::uniform_int_distribution<uint64_t> key_gen(0, KEYS - 1);
 
-    std::function<std::string(size_t)> value_gen = [](size_t key_index) {
+    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
         return "VALUE" + std::to_string(key_index);
     };
 
@@ -172,13 +184,17 @@ TEST(stress, pool) {
         uint64_t key = key_gen(generator);
 
         if (op == 0) {
+            // std::cerr << "insert " << key << std::endl;
             tree.insert(key, value_gen(key));
             in_tree[key] = true;
         } else if (op == 1) {
+            // std::cerr << "erase " << key << std::endl;
             tree.erase(key);
             in_tree[key] = false;
         } else if (op == 2) {
-            ASSERT_EQ(in_tree[key], tree.contains(key));
+            bool verdict = tree.contains(key);
+            // std::cerr << "contains " << key << ' ' << verdict << std::endl;
+            ASSERT_EQ(in_tree[key], verdict);
         }
     }
 }
