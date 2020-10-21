@@ -1,14 +1,22 @@
 #ifndef CSMT_CSMT_H
 #define CSMT_CSMT_H
 
-#include "utils/mingw_patch.h"
-
 #include <cstdint>
 #include <memory>
+#include <sstream> // mingw
 #include <string>
 #include <vector>
 
-#define UNUSED(x) (void)(x)
+#ifdef __MINGW32__
+namespace std {
+template <typename T>
+string to_string(T &&value) {
+    ostringstream s;
+    s << value;
+    return s.str();
+}
+} // namespace std
+#endif
 
 /* WARNING: use it just for samples, not in real code */
 struct DefaultHashPolicy {
@@ -190,32 +198,45 @@ private:
         }
     }
 
-    bool collect_audit_path(ptr_t &root, uint64_t key, std::vector<HashType> &audit_path) {
-        // INPROGRESS needs check
+    bool collect_audit_path(const ptr_t &root, uint64_t key,
+                            std::vector<HashType> &audit_path) const {
         if (root->is_leaf()) {
-            if (root->get_key() != key) {
-                return false;
+            if (root->get_key() == key) {
+                audit_path.push_back(root->get_value());
+                return true;
             }
-        } else {
-            uint64_t l_dist = distance(key, root->left_->get_key());
-            uint64_t r_dist = distance(key, root->right_->get_key());
+            return false;
+        }
 
-            if (l_dist == r_dist) {
-                return false;
-            }
-            if (l_dist < r_dist) {
-                if (!collect_audit_path(root->left_, key, audit_path)) {
-                    return false;
-                }
-                audit_path.push_back(root->right->get_value());
-            } else {
-                if (!collect_audit_path(root->right_, key, audit_path)) {
-                    return false;
-                }
-                audit_path.push_back(root->left->get_value());
-            }
+        if (root->left_ && root->left_->is_leaf() && root->left_->get_key() == key) {
+            audit_path.push_back(root->left_->get_value());
+            audit_path.push_back(root->get_value());
             return true;
         }
+        if (root->right_ && root->right_->is_leaf() && root->right_->get_key() == key) {
+            audit_path.push_back(root->right_->get_value());
+            audit_path.push_back(root->get_value());
+            return true;
+        }
+
+        uint64_t l_dist = distance(key, root->left_->get_key());
+        uint64_t r_dist = distance(key, root->right_->get_key());
+
+        if (l_dist == r_dist) {
+            return false;
+        }
+        if (l_dist < r_dist) {
+            if (!collect_audit_path(root->left_, key, audit_path)) {
+                return false;
+            }
+            audit_path.push_back(root->right_->get_value());
+        } else {
+            if (!collect_audit_path(root->right_, key, audit_path)) {
+                return false;
+            }
+            audit_path.push_back(root->left_->get_value());
+        }
+        return true;
     }
 
     ptr_t erase(ptr_t &root, uint64_t key) {
@@ -291,9 +312,13 @@ public:
     }
 
     std::vector<HashType> membership_proof(uint64_t key) const {
-        std::vector<HashType> audit_path;
-        collect_audit_path(root_, key, audit_path);
-        return audit_path;
+        if (root_) {
+            std::vector<HashType> audit_path;
+            collect_audit_path(root_, key, audit_path);
+            return audit_path;
+        } else {
+            return {};
+        }
     }
 
     void erase(uint64_t key) {
