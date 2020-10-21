@@ -1,6 +1,7 @@
 #include "contrib/crypto/sha256.h"
 #include "contrib/gtest/gtest.h"
 #include "src/csmt.h"
+#include "src/utils/mingw_patch.h"
 
 #include <bitset>
 #include <functional>
@@ -28,7 +29,7 @@ bool look_for_key(const Csmt<HP, VT> &tree, uint64_t key, const std::vector<VT> 
 }
 
 TEST(empty, blank_erase) {
-    Csmt tree;
+    Csmt<> tree;
 
     ASSERT_EQ(tree.size(), 0u);
     ASSERT_TRUE(look_for_key(tree, 0u));
@@ -86,7 +87,7 @@ TEST(basic, two_nodes) {
 }
 
 TEST(basic, not_intersects) {
-    Csmt tree;
+    Csmt<> tree;
 
     tree.insert(2, "hello");
     ASSERT_TRUE(look_for_key(tree, 2, {"hello"}));
@@ -99,7 +100,7 @@ TEST(basic, not_intersects) {
 }
 
 TEST(stress, comeback) {
-    Csmt tree;
+    Csmt<> tree;
     constexpr size_t KEYS = 10;
 
     std::function<std::string(size_t)> value_gen = [](size_t key_index) {
@@ -147,7 +148,7 @@ TEST(stress, pool) {
         return "VALUE" + std::to_string(key_index);
     };
 
-    Csmt tree;
+    Csmt<> tree;
     std::bitset<KEYS> in_tree;
 
     for (size_t op_index = 0; op_index < OPERATIONS; ++op_index) {
