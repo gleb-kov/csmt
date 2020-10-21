@@ -190,6 +190,34 @@ private:
         }
     }
 
+    bool collect_audit_path(ptr_t &root, uint64_t key, std::vector<HashType> &audit_path) {
+        // INPROGRESS needs check
+        if (root->is_leaf()) {
+            if (root->get_key() != key) {
+                return false;
+            }
+        } else {
+            uint64_t l_dist = distance(key, root->left_->get_key());
+            uint64_t r_dist = distance(key, root->right_->get_key());
+
+            if (l_dist == r_dist) {
+                return false;
+            }
+            if (l_dist < r_dist) {
+                if (!collect_audit_path(root->left_, key, audit_path)) {
+                    return false;
+                }
+                audit_path.push_back(root->right->get_value());
+            } else {
+                if (!collect_audit_path(root->right_, key, audit_path)) {
+                    return false;
+                }
+                audit_path.push_back(root->left->get_value());
+            }
+            return true;
+        }
+    }
+
     ptr_t erase(ptr_t &root, uint64_t key) {
         if (root->is_leaf()) {
             if (root->get_key() == key) {
@@ -263,9 +291,9 @@ public:
     }
 
     std::vector<HashType> membership_proof(uint64_t key) const {
-        // FIXME
-        UNUSED(key);
-        return {};
+        std::vector<HashType> audit_path;
+        collect_audit_path(root_, key, audit_path);
+        return audit_path;
     }
 
     void erase(uint64_t key) {
@@ -274,7 +302,7 @@ public:
         }
     }
 
-    bool contains(uint64_t key) const {
+    [[nodiscard]] bool contains(uint64_t key) const {
         if (root_) {
             return contains(root_, key);
         } else {
@@ -282,7 +310,7 @@ public:
         }
     }
 
-    size_t size() const {
+    [[nodiscard]] size_t size() const {
         return size_;
     }
 

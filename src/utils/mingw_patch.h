@@ -8,7 +8,7 @@
 namespace std {
 
     template<typename T>
-    string to_string(T const &&value) {
+    string to_string(T &&value) {
         ostringstream s;
         s << value;
         return s.str();
