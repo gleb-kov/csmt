@@ -2,10 +2,10 @@
 #define CSMT_CSMT_H
 
 #include <cstdint>
+#include <deque>
 #include <memory>
 #include <sstream> // mingw
 #include <string>
-#include <vector>
 
 #ifdef __MINGW32__
 namespace std {
@@ -72,6 +72,8 @@ public:
             , value_(std::move(value)) {
         }
     };
+
+    using proof_t = std::deque<HashType>;
 
 private:
     struct Node {
@@ -162,11 +164,11 @@ private:
         uint64_t l_key = root->left_->get_key();
         uint64_t r_key = root->right_->get_key();
 
-        if (root->left_ && root->left_->is_leaf() && l_key == blob.key_) {
+        if (root->left_->is_leaf() && l_key == blob.key_) {
             root->left_ = insert_leaf(root->left_, blob);
             return make_node(root);
         }
-        if (root->right_ && root->right_->is_leaf() && r_key == blob.key_) {
+        if (root->right_->is_leaf() && r_key == blob.key_) {
             root->right_ = insert_leaf(root->right_, blob);
             return make_node(root);
         }
@@ -209,8 +211,7 @@ private:
         }
     }
 
-    bool collect_audit_path(const ptr_t &root, uint64_t key,
-                            std::vector<HashType> &audit_path) const {
+    bool collect_audit_path(const ptr_t &root, uint64_t key, proof_t &audit_path) const {
         if (root->is_leaf()) {
             if (root->get_key() == key) {
                 audit_path.push_back(root->get_value());
@@ -222,12 +223,12 @@ private:
         uint64_t l_key = root->left_->get_key();
         uint64_t r_key = root->right_->get_key();
 
-        if (root->left_ && root->left_->is_leaf() && l_key == key) {
+        if (root->left_->is_leaf() && l_key == key) {
             audit_path.push_back(root->left_->get_value());
             audit_path.push_back(root->get_value());
             return true;
         }
-        if (root->right_ && root->right_->is_leaf() && r_key == key) {
+        if (root->right_->is_leaf() && r_key == key) {
             audit_path.push_back(root->right_->get_value());
             audit_path.push_back(root->get_value());
             return true;
@@ -236,21 +237,18 @@ private:
         uint64_t l_dist = distance(key, l_key);
         uint64_t r_dist = distance(key, r_key);
 
-        if (l_dist == r_dist) {
-            return false;
-        }
         if (l_dist < r_dist) {
-            if (!collect_audit_path(root->left_, key, audit_path)) {
-                return false;
+            if (collect_audit_path(root->left_, key, audit_path)) {
+                audit_path.push_back(root->get_value());
+                return true;
             }
-            audit_path.push_back(root->get_value());
-        } else {
-            if (!collect_audit_path(root->right_, key, audit_path)) {
-                return false;
+        } else if (l_dist > r_dist) {
+            if (collect_audit_path(root->right_, key, audit_path)) {
+                audit_path.push_back(root->get_value());
+                return true;
             }
-            audit_path.push_back(root->get_value());
         }
-        return true;
+        return false;
     }
 
     ptr_t erase(ptr_t &root, uint64_t key) {
@@ -262,11 +260,11 @@ private:
                 return std::move(root);
             }
         }
-        if (root->left_ && root->left_->is_leaf() && root->left_->get_key() == key) {
+        if (root->left_->is_leaf() && root->left_->get_key() == key) {
             --size_;
             return std::move(root->right_);
         }
-        if (root->right_ && root->right_->is_leaf() && root->right_->get_key() == key) {
+        if (root->right_->is_leaf() && root->right_->get_key() == key) {
             --size_;
             return std::move(root->left_);
         }
@@ -294,10 +292,10 @@ private:
         uint64_t left_key = root->left_->get_key();
         uint64_t right_key = root->right_->get_key();
 
-        if (root->left_ && root->left_->is_leaf() && root->left_->get_key() == key) {
+        if (root->left_->is_leaf() && root->left_->get_key() == key) {
             return true;
         }
-        if (root->right_ && root->right_->is_leaf() && root->right_->get_key() == key) {
+        if (root->right_->is_leaf() && root->right_->get_key() == key) {
             return true;
         }
 
@@ -325,9 +323,9 @@ public:
         }
     }
 
-    std::vector<HashType> membership_proof(uint64_t key) const {
+    proof_t membership_proof(uint64_t key) const {
         if (root_) {
-            std::vector<HashType> audit_path;
+            proof_t audit_path;
             collect_audit_path(root_, key, audit_path);
             return audit_path;
         } else {
