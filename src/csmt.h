@@ -164,11 +164,11 @@ private:
 
         if (root->left_ && root->left_->is_leaf() && l_key == blob.key_) {
             root->left_ = insert_leaf(root->left_, blob);
-            return std::move(root);
+            return make_node(root);
         }
         if (root->right_ && root->right_->is_leaf() && r_key == blob.key_) {
             root->right_ = insert_leaf(root->right_, blob);
-            return std::move(root);
+            return make_node(root);
         }
 
         uint64_t l_dist = distance(blob.key_, l_key);
@@ -243,12 +243,12 @@ private:
             if (!collect_audit_path(root->left_, key, audit_path)) {
                 return false;
             }
-            audit_path.push_back(root->right_->get_value());
+            audit_path.push_back(root->get_value());
         } else {
             if (!collect_audit_path(root->right_, key, audit_path)) {
                 return false;
             }
-            audit_path.push_back(root->left_->get_value());
+            audit_path.push_back(root->get_value());
         }
         return true;
     }

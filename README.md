@@ -22,9 +22,3 @@ Unit and integration tests are [here](/tests), implemented with GTest.
 
 ## Performance
 Benchmarks of CSMT structure and utils code are [here](/benchmark).
-
-## TODO
-
-- Check mac and win builds
-
-- Experimental benchmark build with clang

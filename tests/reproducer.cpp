@@ -8,6 +8,7 @@ int main() {
     std::unordered_set<uint64_t> in_tree;
 
     size_t op_index = 0;
+    size_t tree_size = 0;
     std::string operation;
     uint64_t key;
 
@@ -19,11 +20,29 @@ int main() {
 
     while (std::cin >> operation >> key) {
         if (operation == "insert") {
-            tree.insert(key, value_gen(key));
-            in_tree.insert(key);
+            if (in_tree.find(key) == in_tree.end()) {
+                tree.insert(key, value_gen(key));
+                in_tree.insert(key);
+                ++tree_size;
+            }
+            if (tree.size() != tree_size) {
+                std::cerr << "FAILED. Operation: index " << op_index <<
+                          ' ' << operation << ". Incorrect tree size:" <<
+                          tree_size << " != " << tree.size();
+                std::abort();
+            }
         } else if (operation == "erase") {
-            tree.erase(key);
-            in_tree.erase(key);
+            if (in_tree.find(key) != in_tree.end()) {
+                tree.erase(key);
+                in_tree.erase(key);
+                --tree_size;
+            }
+            if (tree.size() != tree_size) {
+                std::cerr << "FAILED. Operation: index " << op_index <<
+                        ' ' << operation << ". Incorrect tree size:" <<
+                        tree_size << " != " << tree.size();
+                std::abort();
+            }
         } else if (operation == "contains") {
             bool tree_verdict = tree.contains(key);
             bool set_verdict = in_tree.find(key) != in_tree.end();
@@ -33,6 +52,12 @@ int main() {
             if (tree_verdict != set_verdict) {
                 std::cerr << "FAILED. Operation: index " << op_index <<
                         ' ' << operation << ' ' << key << std::endl;
+                std::abort();
+            }
+            if (tree.size() != tree_size) {
+                std::cerr << "FAILED. Operation: index " << op_index <<
+                          ' ' << operation << ". Incorrect tree size:" <<
+                          tree_size << " != " << tree.size();
                 std::abort();
             }
         }

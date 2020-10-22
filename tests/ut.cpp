@@ -26,7 +26,7 @@ bool look_for_key(const Csmt<HP, HT, VT> &tree, uint64_t key, const std::vector<
     return tree.membership_proof(key) == proof;
 }
 
-TEST(empty, blank_erase) {
+TEST(basic, blank_erase) {
     Csmt<> tree;
 
     ASSERT_EQ(tree.size(), 0u);
@@ -125,6 +125,22 @@ TEST(basic, insert_trick) {
     tree.insert(13, value_gen(13));
     tree.insert(12, value_gen(12));
     ASSERT_TRUE(tree.contains(13));
+}
+
+TEST(basic, binary_tree_proof) {
+    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
+        return std::to_string(key_index);
+    };
+
+    Csmt<IdentityHashPolicy> tree;
+    for (uint64_t key_index = 0; key_index < 8; ++key_index) {
+        tree.insert(key_index, value_gen(key_index));
+    }
+
+    ASSERT_TRUE(look_for_key(tree, 0, {"0", "01", "0123", "01234567"}));
+    ASSERT_TRUE(look_for_key(tree, 1, {"1", "01", "0123", "01234567"}));
+    ASSERT_TRUE(look_for_key(tree, 5, {"5", "45", "4567", "01234567"}));
+    ASSERT_TRUE(look_for_key(tree, 6, {"6", "67", "4567", "01234567"}));
 }
 
 TEST(stress, comeback) {
