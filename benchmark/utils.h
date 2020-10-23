@@ -6,7 +6,7 @@
 #include <random>
 
 namespace bench_utils {
-    void escape(void* p) {
+    void escape(void *p) {
         asm volatile("" : : "g"(p) : "memory");
     }
 
@@ -93,8 +93,8 @@ namespace time_utils {
 
 namespace string_utils {
     std::string generate_random_string(size_t size) {
-        std::random_device random_device;
-        std::mt19937 generator;
+        static std::random_device random_device;
+        static std::mt19937 generator(random_device());
         std::uniform_int_distribution<> distrib(0, 26 - 1 + 26 - 1 + 10 - 1);
 
         std::string result;

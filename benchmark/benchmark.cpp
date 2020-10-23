@@ -6,9 +6,9 @@
 #include <iostream>
 
 /***  choose hash policy for benchmarks ***/
-#define DEFAULT_POLICY
+// #define DEFAULT_POLICY
 // #define SHA256_POLICY
-// #define SHA256_TREE_POLICY
+#define SHA256_TREE_POLICY
 
 constexpr size_t DEF_KEYS = 50'000;
 
@@ -35,7 +35,7 @@ void spam_insert() {
     uint64_t min_elapsed_ns = std::numeric_limits<uint64_t>::max();
     uint64_t max_elapsed_ns = 0;
 
-    time_utils::stage_timer st;
+    time_utils::stage_timer<> st;
     tree_type tree;
 
     for (size_t idx = 0; idx < KEYS; ++idx) {
@@ -66,9 +66,9 @@ void spam_erase() {
     }
 
     std::random_device random_device;
-    std::mt19937 generator;
+    std::mt19937 generator(random_device());
     std::uniform_int_distribution<uint64_t> key_gen(0, KEYS - 1);
-    time_utils::stage_timer st;
+    time_utils::stage_timer<> st;
 
     std::bitset<KEYS> already_erased;
 
@@ -112,9 +112,9 @@ void spam_contains() {
     }
 
     std::random_device random_device;
-    std::mt19937 generator;
+    std::mt19937 generator(random_device());
     std::uniform_int_distribution<uint64_t> key_gen(0, 2 * KEYS - 1);
-    time_utils::stage_timer st;
+    time_utils::stage_timer<> st;
 
     uint64_t elapsed_ns = 0;
     uint64_t min_elapsed_ns = std::numeric_limits<uint64_t>::max();
@@ -150,10 +150,10 @@ void spam_all() {
     tree_type tree;
 
     std::random_device random_device;
-    std::mt19937 generator;
+    std::mt19937 generator(random_device());
     std::uniform_int_distribution<> op_gen(0, 2);
     std::uniform_int_distribution<uint64_t> key_gen(0, 4 * KEYS - 1);
-    time_utils::stage_timer st;
+    time_utils::stage_timer<> st;
 
     uint64_t elapsed_ns = 0;
 
