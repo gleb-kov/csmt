@@ -6,7 +6,7 @@
 #include <random>
 
 namespace bench_utils {
-    void escape(void* p) {
+    void escape(void *p) {
         asm volatile("" : : "g"(p) : "memory");
     }
 
@@ -14,12 +14,12 @@ namespace bench_utils {
         asm volatile("" : : : "memory");
     }
 
-    template <typename T>
+    template<typename T>
     inline void do_not_optimize(const T &val) {
         asm volatile("" : : "r,m"(val) : "memory");
     }
 
-    template <typename T>
+    template<typename T>
     inline void do_not_optimize(T &val) {
         asm volatile("" : "+m,r"(val) : : "memory");
     }
@@ -30,7 +30,7 @@ namespace time_utils {
     using benchmark_clock_t = std::chrono::high_resolution_clock;
     using benchmark_duration_t = std::chrono::milliseconds;
 
-    template <typename Clock = benchmark_clock_t>
+    template<typename Clock = benchmark_clock_t>
     class stage_timer {
         using point_t = std::chrono::time_point<Clock>;
 
@@ -44,19 +44,19 @@ namespace time_utils {
             return Clock::now();
         }
 
-        template <typename T>
+        template<typename T>
         [[nodiscard]] static auto duration(point_t finish, point_t start) {
             return std::chrono::duration_cast<T>(finish - start);
         }
 
-        template <typename T>
+        template<typename T>
         [[nodiscard]] static auto duration_since(point_t point) {
             return duration<T>(now(), point);
         }
 
     public:
         stage_timer() noexcept
-            : init_point_(now()) {
+                : init_point_(now()) {
             start_stage();
         }
 
@@ -69,19 +69,19 @@ namespace time_utils {
             return snapshot_;
         }
 
-        template <typename T = benchmark_duration_t>
+        template<typename T = benchmark_duration_t>
         [[nodiscard]] auto since_init() const {
             return duration_since<T>(init_point_);
         }
 
         /* stage is still going, do not update snapshot */
-        template <typename T = benchmark_duration_t>
+        template<typename T = benchmark_duration_t>
         [[nodiscard]] auto get_duration() const {
             return duration_since<T>(snapshot_);
         }
 
         /* stop stage and return duration */
-        template <typename T = benchmark_duration_t>
+        template<typename T = benchmark_duration_t>
         auto stop_stage() {
             point_t helper = now();
             std::swap(helper, snapshot_);
@@ -101,11 +101,11 @@ namespace string_utils {
         for (size_t i = 0; i < size; ++i) {
             int mchar = distrib(generator);
             if (mchar < 10) {
-                result += (char)('0' + mchar);
+                result += (char) ('0' + mchar);
             } else if (mchar < 36) {
-                result += (char)('a' - 10 + mchar);
+                result += (char) ('a' - 10 + mchar);
             } else {
-                result += (char)('A' - 36 + mchar);
+                result += (char) ('A' - 36 + mchar);
             }
         }
         return result;
