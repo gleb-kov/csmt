@@ -5,8 +5,6 @@
 #include <sstream>
 #include <random>
 
-namespace test {
-
 struct IdentityHashPolicy {
     static std::string leaf_hash(std::string leaf_value) {
         return leaf_value;
@@ -33,12 +31,10 @@ inline std::string default_value_gen(uint64_t key_index) {
     return s.str();
 }
 
-inline std::mt19937 &rnd() {
+inline std::mt19937 rnd() {
     static std::random_device random_device;
     static std::mt19937 generator(random_device());
     return generator;
-}
-
 }
 
 #endif // CSMT_TEST_UTILS_H

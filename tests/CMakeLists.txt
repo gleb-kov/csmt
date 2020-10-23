@@ -14,7 +14,7 @@ foreach (TEST_TYPE unit stress structural)
     endif (UNIX AND NOT APPLE)
 endforeach ()
 
-add_executable(emulate common/emulate.cpp)
+add_executable(emulate emulate.cpp)
 message("-- Emulator built")
 
 if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)

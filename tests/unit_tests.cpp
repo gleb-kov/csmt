@@ -1,10 +1,8 @@
 #include "contrib/gtest/gtest.h"
 #include "src/csmt.h"
-#include "tests/common/test_utils.h"
+#include "utils.h"
 
 #include <functional>
-
-using namespace test;
 
 TEST(basic, blank_erase) {
     Csmt<> tree;
@@ -59,7 +57,6 @@ TEST(basic, two_nodes) {
     ASSERT_TRUE(look_for_key(tree, 3, {"world", "helloworld"}));
 
     tree.erase(6);
-
     ASSERT_EQ(tree.size(), 2u);
     ASSERT_TRUE(look_for_key(tree, 0));
     ASSERT_TRUE(look_for_key(tree, 3, {"world", "helloworld"}));
@@ -78,7 +75,6 @@ TEST(basic, two_nodes_erase) {
     ASSERT_TRUE(look_for_key(tree, 3, {"world", "helloworld"}));
 
     tree.erase(2);
-
     ASSERT_EQ(tree.size(), 1u);
     ASSERT_TRUE(look_for_key(tree, 0));
     ASSERT_TRUE(look_for_key(tree, 3, {"world"}));
@@ -88,7 +84,6 @@ TEST(basic, not_intersects) {
     Csmt<IdentityHashPolicy> tree;
 
     tree.insert(2, "hello");
-
     ASSERT_TRUE(look_for_key(tree, 2, {"hello"}));
 
     tree.erase(3);
@@ -99,12 +94,14 @@ TEST(basic, not_intersects) {
 }
 
 TEST(basic, insert_trick) {
+    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
+        return "VALUE" + std::to_string(key_index);
+    };
+
     Csmt<> tree;
-
-    tree.insert(12, default_value_gen(12));
-    tree.insert(13, default_value_gen(13));
-    tree.insert(12, default_value_gen(12));
-
+    tree.insert(12, value_gen(12));
+    tree.insert(13, value_gen(13));
+    tree.insert(12, value_gen(12));
     ASSERT_TRUE(tree.contains(13));
 }
 
