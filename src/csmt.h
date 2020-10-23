@@ -1,28 +1,25 @@
 #ifndef CSMT_CSMT_H
 #define CSMT_CSMT_H
 
-#include "src/log2_utils.h"
-
 #include <cstdint>
 #include <deque>
 #include <memory>
 #include <string>
 
 #ifdef __MINGW32__
-
 #include <sstream> // mingw
 
 namespace std {
-    template<typename T>
-    string to_string(T &&value) {
-        ostringstream s;
-        s << value;
-        return s.str();
-    }
+template <typename T>
+string to_string(T &&value) {
+    ostringstream s;
+    s << value;
+    return s.str();
+}
 } // namespace std
 #endif
 
-//#pragma GCC diagnostic ignored "-Wattributes"
+#pragma GCC diagnostic ignored "-Wattributes"
 
 /* WARNING: use it just for samples, not in real code */
 struct DefaultHashPolicy {
@@ -34,12 +31,12 @@ struct DefaultHashPolicy {
         return std::to_string(std::hash<std::string>{}(lhs + rhs));
     }
 
-    template<typename T>
+    template <typename T>
     static T leaf_hash(const T &leaf_value) {
         return std::hash<T>{}(leaf_value);
     }
 
-    template<typename T>
+    template <typename T>
     static T merge_hash(const T &lhs, const T &rhs) {
         return std::hash<T>{}(lhs + rhs);
     }
@@ -63,9 +60,9 @@ struct DefaultHashPolicy {
  *  Key type -- uint64_t.
  */
 
-template<typename HashPolicy = DefaultHashPolicy, typename HashType = std::string,
-        typename ValueType = std::string
-        /*, typename Alloc = std::allocator<void>*/> // TODO
+template <typename HashPolicy = DefaultHashPolicy, typename HashType = std::string,
+          typename ValueType = std::string
+          /*, typename Alloc = std::allocator<void>*/> // TODO
 class Csmt {
 public:
     /* Structure that holds key and value as element of merkle tree */
@@ -74,7 +71,8 @@ public:
         HashType value_;
 
         Blob(uint64_t key, HashType value)
-                : key_(key), value_(std::move(value)) {
+            : key_(key)
+            , value_(std::move(value)) {
         }
     };
 
@@ -89,7 +87,9 @@ private:
         ptr_t right_ = nullptr;
 
         explicit Node(Blob blob, ptr_t left, ptr_t right)
-                : blob_(std::move(blob)), left_(std::move(left)), right_(std::move(right)) {
+            : blob_(std::move(blob))
+            , left_(std::move(left))
+            , right_(std::move(right)) {
         }
 
         [[nodiscard]] bool is_leaf() const {
@@ -114,12 +114,23 @@ private:
     ptr_t root_ = nullptr;
     size_t size_ = 0;
 
-public:
+private:
     static uint64_t log2(uint64_t num) {
 #ifdef __GNUC__
-        return LOG2(num);
+        return ((unsigned)(8 * sizeof(unsigned long long) - __builtin_clzll((num)) - 1));
 #else
-        return log2_impl::table_log2(num);
+        static constexpr uint64_t table[64] = {
+            0,  58, 1,  59, 47, 53, 2,  60, 39, 48, 27, 54, 33, 42, 3,  61,
+            51, 37, 40, 49, 18, 28, 20, 55, 30, 34, 11, 43, 14, 22, 4,  62,
+            57, 46, 52, 38, 26, 32, 41, 50, 36, 17, 19, 29, 10, 13, 21, 56,
+            45, 25, 31, 35, 16, 9,  12, 44, 24, 15, 8,  23, 7,  6,  5,  63};
+        num |= num >> 1u;
+        num |= num >> 2u;
+        num |= num >> 4u;
+        num |= num >> 8u;
+        num |= num >> 16u;
+        num |= num >> 32u;
+        return table[(num * 0x03f6eaf2cd271461) >> 58u];
 #endif
     }
 
