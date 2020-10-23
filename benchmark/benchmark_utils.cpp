@@ -44,7 +44,7 @@ void bench_log2() {
     {
         std::cout << "BENCH NAIVE LOG2" << std::endl;
         uint64_t total = 0; // do not wipe log2
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             uint64_t num = distrib(generator);
             uint64_t res = log2_impl::naive_log2(num);
@@ -61,7 +61,7 @@ void bench_log2() {
         std::cout << "WORKS ONLY ON GCC" << std::endl;
 #else
         uint64_t total = 0; // do not wipe log2
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             uint64_t num = distrib(generator);
             uint64_t res = LOG2(num);
@@ -75,7 +75,7 @@ void bench_log2() {
     {
         std::cout << "BENCH TABLE LOG2" << std::endl;
         uint64_t total = 0; // do not wipe log2
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             uint64_t num = distrib(generator);
             uint64_t res = log2_impl::table_log2(num);
@@ -92,7 +92,7 @@ void bench_sha256() {
     {
         std::cout << "BENCH SHA256 4 chars" << std::endl;
         uint64_t elapsed_ns = 0;
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             std::string str = string_utils::generate_random_string(4);
             bench_utils::do_not_optimize(str);
@@ -107,7 +107,7 @@ void bench_sha256() {
     {
         std::cout << "BENCH SHA256 32 chars" << std::endl;
         uint64_t elapsed_ns = 0;
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             std::string str = string_utils::generate_random_string(32);
             bench_utils::do_not_optimize(str);
@@ -122,7 +122,7 @@ void bench_sha256() {
     {
         std::cout << "BENCH SHA256 256 chars" << std::endl;
         uint64_t elapsed_ns = 0;
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             std::string str = string_utils::generate_random_string(128);
             bench_utils::do_not_optimize(str);
@@ -137,7 +137,7 @@ void bench_sha256() {
     {
         std::cout << "BENCH SHA256 2048 chars" << std::endl;
         uint64_t elapsed_ns = 0;
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             std::string str = string_utils::generate_random_string(2048);
             bench_utils::do_not_optimize(str);
@@ -152,7 +152,7 @@ void bench_sha256() {
     {
         std::cout << "BENCH SHA256 16384 chars" << std::endl;
         uint64_t elapsed_ns = 0;
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             std::string str = string_utils::generate_random_string(16384);
             bench_utils::do_not_optimize(str);
@@ -171,7 +171,7 @@ void bench_std_hash() {
     {
         std::cout << "BENCH STD HASH 4 chars" << std::endl;
         uint64_t elapsed_ns = 0;
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             std::string str = string_utils::generate_random_string(4);
             st.start_stage();
@@ -185,7 +185,7 @@ void bench_std_hash() {
     {
         std::cout << "BENCH STD HASH 32 chars" << std::endl;
         uint64_t elapsed_ns = 0;
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             std::string str = string_utils::generate_random_string(32);
             st.start_stage();
@@ -199,7 +199,7 @@ void bench_std_hash() {
     {
         std::cout << "BENCH STD HASH 256 chars" << std::endl;
         uint64_t elapsed_ns = 0;
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             std::string str = string_utils::generate_random_string(128);
             st.start_stage();
@@ -213,7 +213,7 @@ void bench_std_hash() {
     {
         std::cout << "BENCH STD HASH 2048 chars" << std::endl;
         uint64_t elapsed_ns = 0;
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             std::string str = string_utils::generate_random_string(2048);
             st.start_stage();
@@ -227,7 +227,7 @@ void bench_std_hash() {
     {
         std::cout << "BENCH STD HASH 16384 chars" << std::endl;
         uint64_t elapsed_ns = 0;
-        time_utils::stage_timer st;
+        time_utils::stage_timer<> st;
         for (uint64_t i = 0; i < ITERATIONS; ++i) {
             std::string str = string_utils::generate_random_string(16384);
             st.start_stage();
