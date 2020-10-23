@@ -4,11 +4,10 @@
 #include <cstdint>
 #include <deque>
 #include <memory>
+#include <sstream> // mingw
 #include <string>
 
 #ifdef __MINGW32__
-#include <sstream> // mingw
-
 namespace std {
 template <typename T>
 string to_string(T &&value) {
@@ -18,8 +17,6 @@ string to_string(T &&value) {
 }
 } // namespace std
 #endif
-
-#pragma GCC diagnostic ignored "-Wattributes"
 
 /* WARNING: use it just for samples, not in real code */
 struct DefaultHashPolicy {
