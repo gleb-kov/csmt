@@ -67,7 +67,7 @@ public:
 
     using proof_t = std::deque<HashType>;
 
-private:
+protected:
     struct Node {
         using ptr_t = std::unique_ptr<Node>;
 
