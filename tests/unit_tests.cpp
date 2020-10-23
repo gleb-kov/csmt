@@ -1,10 +1,44 @@
 #include "contrib/gtest/gtest.h"
+#include "contrib/crypto/sha256.h"
 #include "src/csmt.h"
+#include "src/log2_utils.h"
 #include "tests/common/test_utils.h"
 
 #include <functional>
+#include <string>
+#include <vector>
 
 using namespace test;
+
+TEST(log2, correct) {
+    uint64_t key = 1;
+    uint64_t next_key = 2;
+    uint64_t power = 0;
+
+    for (; key < (1ull << 15u); key++) {
+        if (key == next_key) {
+            next_key <<= 1u;
+            power++;
+        }
+#ifdef __GNUC__
+        ASSERT_EQ(LOG2(key), power);
+#endif
+        ASSERT_EQ(log2_impl::table_log2(key), power);
+    }
+}
+
+TEST(sha256, correct) {
+    std::vector<std::pair<std::string, std::string>> codes{
+            {"",       "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+            {"banana", "b493d48364afe44d11c0165cf470a4164d1e2609911ef998be868d46ade3de4e"},
+            {"cat",    "77af778b51abd4a3c51c5ddd97204a9c3ae614ebccb75a606c3b6865aed6744e"},
+            {"polina", "b34cd4a97cfc6649655a00bfa9cd3fb3acb5f73e59498ee0475b4547db516131"}
+    };
+
+    for (auto const &pair: codes) {
+        ASSERT_EQ(SHA256::hash(pair.first), pair.second);
+    }
+}
 
 TEST(basic, blank_erase) {
     Csmt<> tree;
