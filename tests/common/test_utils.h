@@ -18,7 +18,7 @@ namespace test {
     };
 
     template<typename HP, typename HT, typename VT>
-    bool look_for_key(const Csmt<HP, HT, VT> &tree, uint64_t key, const std::deque<HT> &proof = {}) {
+    bool check_proof(const Csmt<HP, HT, VT> &tree, uint64_t key, const std::deque<HT> &proof = {}) {
         bool empty = proof.empty();
         bool contains = tree.contains(key);
         if (empty == contains) {

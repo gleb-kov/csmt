@@ -67,6 +67,9 @@ template<typename HashPolicy = DefaultHashPolicy, typename HashType = std::strin
         typename ValueType = std::string
         /*, typename Alloc = std::allocator<void>*/> // TODO
 class Csmt {
+
+    friend class structural_tests;
+
 public:
     /* Structure that holds key and value as element of merkle tree */
     struct Blob {
