@@ -1,5 +1,6 @@
 #include "src/csmt.h"
 
+#include <cstdlib>
 #include <functional>
 #include <iostream>
 #include <unordered_set>

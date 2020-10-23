@@ -20,22 +20,14 @@ string to_string(T &&value) {
 
 /* WARNING: use it just for samples, not in real code */
 struct DefaultHashPolicy {
-    static std::string leaf_hash(const std::string &leaf_value) {
-        return std::to_string(std::hash<std::string>{}(leaf_value));
-    }
-
-    static std::string merge_hash(const std::string &lhs, const std::string &rhs) {
-        return std::to_string(std::hash<std::string>{}(lhs + rhs));
+    template <typename T>
+    static std::string leaf_hash(const T &leaf_value) {
+        return std::to_string(std::hash<T>{}(leaf_value));
     }
 
     template <typename T>
-    static T leaf_hash(const T &leaf_value) {
-        return std::hash<T>{}(leaf_value);
-    }
-
-    template <typename T>
-    static T merge_hash(const T &lhs, const T &rhs) {
-        return std::hash<T>{}(lhs + rhs);
+    static std::string merge_hash(const T &lhs, const T &rhs) {
+        return std::to_string(std::hash<T>{}(lhs + rhs));
     }
 };
 
@@ -323,7 +315,7 @@ public:
         }
     }
 
-    proof_t membership_proof(uint64_t key) const {
+    [[nodiscard]] proof_t membership_proof(uint64_t key) const {
         if (root_) {
             proof_t audit_path;
             collect_audit_path(root_, key, audit_path);

@@ -4,8 +4,17 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_library(gtest STATIC ${GTEST_SRC})
 
-add_executable(unit_tests ut.cpp)
-add_executable(reproduce reproducer.cpp)
+message("-- Configuring tests:")
+foreach (TEST_TYPE unit stress structural)
+    message("   - ${TEST_TYPE}")
+    add_executable(${TEST_TYPE}_tests ${TEST_TYPE}_tests.cpp utils.h)
+    target_link_libraries(${TEST_TYPE}_tests gtest)
+    if (UNIX AND NOT APPLE)
+        target_link_libraries(${TEST_TYPE}_tests pthread)
+    endif (UNIX AND NOT APPLE)
+endforeach ()
+
+add_executable(emulate emulate.cpp)
 
 if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++17 -pedantic -O2")
@@ -15,9 +24,3 @@ if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
     endif ()
 endif ()
-
-target_link_libraries(unit_tests gtest)
-
-if (UNIX AND NOT APPLE)
-    target_link_libraries(unit_tests pthread)
-endif (UNIX AND NOT APPLE)
