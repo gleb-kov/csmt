@@ -82,7 +82,7 @@ TEST(stress, comeback) {
     }
     for (size_t key_index = 0; key_index < KEYS; ++key_index) {
         if (key_index % 3 == 0) {
-            ASSERT_TRUE(check_proof(tree, key_index, {}));
+            ASSERT_TRUE(look_for_key(tree, key_index, {}));
         } else {
             ASSERT_TRUE(tree.contains(key_index));
         }

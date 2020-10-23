@@ -44,12 +44,12 @@ TEST(basic, blank_erase) {
     Csmt<> tree;
 
     ASSERT_EQ(tree.size(), 0u);
-    ASSERT_TRUE(check_proof(tree, 0u));
+    ASSERT_TRUE(look_for_key(tree, 0u));
 
     tree.erase(0);
 
     ASSERT_EQ(tree.size(), 0u);
-    ASSERT_TRUE(check_proof(tree, 0u));
+    ASSERT_TRUE(look_for_key(tree, 0u));
 }
 
 TEST(basic, insert_erase) {
@@ -58,12 +58,12 @@ TEST(basic, insert_erase) {
     tree.insert(0, "hello");
 
     ASSERT_EQ(tree.size(), 1u);
-    ASSERT_TRUE(check_proof(tree, 0, {"hello"}));
+    ASSERT_TRUE(look_for_key(tree, 0, {"hello"}));
 
     tree.erase(0);
 
     ASSERT_EQ(tree.size(), 0u);
-    ASSERT_TRUE(check_proof(tree, 0u));
+    ASSERT_TRUE(look_for_key(tree, 0u));
 }
 
 TEST(basic, update) {
@@ -72,12 +72,12 @@ TEST(basic, update) {
     tree.insert(0, "hello");
 
     ASSERT_EQ(tree.size(), 1u);
-    ASSERT_TRUE(check_proof(tree, 0, {"hello"}));
+    ASSERT_TRUE(look_for_key(tree, 0, {"hello"}));
 
     tree.insert(0, "world");
 
     ASSERT_EQ(tree.size(), 1u);
-    ASSERT_TRUE(check_proof(tree, 0, {"world"}));
+    ASSERT_TRUE(look_for_key(tree, 0, {"world"}));
 }
 
 TEST(basic, two_nodes) {
@@ -89,14 +89,14 @@ TEST(basic, two_nodes) {
     ASSERT_TRUE(tree.contains(2));
 
     ASSERT_EQ(tree.size(), 2u);
-    ASSERT_TRUE(check_proof(tree, 2, {"hello", "helloworld"}));
-    ASSERT_TRUE(check_proof(tree, 3, {"world", "helloworld"}));
+    ASSERT_TRUE(look_for_key(tree, 2, {"hello", "helloworld"}));
+    ASSERT_TRUE(look_for_key(tree, 3, {"world", "helloworld"}));
 
     tree.erase(6);
 
     ASSERT_EQ(tree.size(), 2u);
-    ASSERT_TRUE(check_proof(tree, 0));
-    ASSERT_TRUE(check_proof(tree, 3, {"world", "helloworld"}));
+    ASSERT_TRUE(look_for_key(tree, 0));
+    ASSERT_TRUE(look_for_key(tree, 3, {"world", "helloworld"}));
 }
 
 TEST(basic, two_nodes_erase) {
@@ -108,14 +108,14 @@ TEST(basic, two_nodes_erase) {
     ASSERT_TRUE(tree.contains(2));
 
     ASSERT_EQ(tree.size(), 2u);
-    ASSERT_TRUE(check_proof(tree, 2, {"hello", "helloworld"}));
-    ASSERT_TRUE(check_proof(tree, 3, {"world", "helloworld"}));
+    ASSERT_TRUE(look_for_key(tree, 2, {"hello", "helloworld"}));
+    ASSERT_TRUE(look_for_key(tree, 3, {"world", "helloworld"}));
 
     tree.erase(2);
 
     ASSERT_EQ(tree.size(), 1u);
-    ASSERT_TRUE(check_proof(tree, 0));
-    ASSERT_TRUE(check_proof(tree, 3, {"world"}));
+    ASSERT_TRUE(look_for_key(tree, 0));
+    ASSERT_TRUE(look_for_key(tree, 3, {"world"}));
 }
 
 TEST(basic, not_intersects) {
@@ -123,13 +123,13 @@ TEST(basic, not_intersects) {
 
     tree.insert(2, "hello");
 
-    ASSERT_TRUE(check_proof(tree, 2, {"hello"}));
+    ASSERT_TRUE(look_for_key(tree, 2, {"hello"}));
 
     tree.erase(3);
 
     ASSERT_TRUE(tree.size() == 1);
-    ASSERT_TRUE(check_proof(tree, 2, {"hello"}));
-    ASSERT_TRUE(check_proof(tree, 3, {}));
+    ASSERT_TRUE(look_for_key(tree, 2, {"hello"}));
+    ASSERT_TRUE(look_for_key(tree, 3, {}));
 }
 
 TEST(basic, insert_trick) {
@@ -152,8 +152,8 @@ TEST(basic, binary_tree_proof) {
         tree.insert(key_index, value_gen(key_index));
     }
 
-    ASSERT_TRUE(check_proof(tree, 0, {"0", "01", "0123", "01234567"}));
-    ASSERT_TRUE(check_proof(tree, 1, {"1", "01", "0123", "01234567"}));
-    ASSERT_TRUE(check_proof(tree, 5, {"5", "45", "4567", "01234567"}));
-    ASSERT_TRUE(check_proof(tree, 6, {"6", "67", "4567", "01234567"}));
+    ASSERT_TRUE(look_for_key(tree, 0, {"0", "01", "0123", "01234567"}));
+    ASSERT_TRUE(look_for_key(tree, 1, {"1", "01", "0123", "01234567"}));
+    ASSERT_TRUE(look_for_key(tree, 5, {"5", "45", "4567", "01234567"}));
+    ASSERT_TRUE(look_for_key(tree, 6, {"6", "67", "4567", "01234567"}));
 }
