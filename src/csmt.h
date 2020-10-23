@@ -68,8 +68,6 @@ template<typename HashPolicy = DefaultHashPolicy, typename HashType = std::strin
         /*, typename Alloc = std::allocator<void>*/> // TODO
 class Csmt {
 
-    friend class structural_tests;
-
 public:
     /* Structure that holds key and value as element of merkle tree */
     struct Blob {
@@ -83,7 +81,7 @@ public:
 
     using proof_t = std::deque<HashType>;
 
-private:
+protected:
     struct Node {
         using ptr_t = std::unique_ptr<Node>;
 
