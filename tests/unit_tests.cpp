@@ -54,13 +54,13 @@ TEST(basic, two_nodes) {
     ASSERT_TRUE(tree.contains(2));
 
     ASSERT_EQ(tree.size(), 2u);
-    ASSERT_TRUE(look_for_key(tree, 2, {"hello", "helloworld"}));
-    ASSERT_TRUE(look_for_key(tree, 3, {"world", "helloworld"}));
+    ASSERT_TRUE(look_for_key(tree, 2, {"hello", "world", "helloworld"}));
+    ASSERT_TRUE(look_for_key(tree, 3, {"hello", "world", "helloworld"}));
 
     tree.erase(6);
     ASSERT_EQ(tree.size(), 2u);
     ASSERT_TRUE(look_for_key(tree, 0));
-    ASSERT_TRUE(look_for_key(tree, 3, {"world", "helloworld"}));
+    ASSERT_TRUE(look_for_key(tree, 3, {"hello", "world", "helloworld"}));
 }
 
 TEST(basic, two_nodes_erase) {
@@ -72,8 +72,8 @@ TEST(basic, two_nodes_erase) {
     ASSERT_TRUE(tree.contains(2));
 
     ASSERT_EQ(tree.size(), 2u);
-    ASSERT_TRUE(look_for_key(tree, 2, {"hello", "helloworld"}));
-    ASSERT_TRUE(look_for_key(tree, 3, {"world", "helloworld"}));
+    ASSERT_TRUE(look_for_key(tree, 2, {"hello", "world", "helloworld"}));
+    ASSERT_TRUE(look_for_key(tree, 3, {"hello", "world", "helloworld"}));
 
     tree.erase(2);
     ASSERT_EQ(tree.size(), 1u);
@@ -116,8 +116,8 @@ TEST(basic, binary_tree_proof) {
         tree.insert(key_index, value_gen(key_index));
     }
 
-    ASSERT_TRUE(look_for_key(tree, 0, {"0", "01", "0123", "01234567"}));
-    ASSERT_TRUE(look_for_key(tree, 1, {"1", "01", "0123", "01234567"}));
-    ASSERT_TRUE(look_for_key(tree, 5, {"5", "45", "4567", "01234567"}));
-    ASSERT_TRUE(look_for_key(tree, 6, {"6", "67", "4567", "01234567"}));
+    ASSERT_TRUE(look_for_key(tree, 0, {"0", "1", "01", "23", "0123", "4567", "01234567"}));
+    ASSERT_TRUE(look_for_key(tree, 1, {"0", "1", "01", "23", "0123", "4567", "01234567"}));
+    ASSERT_TRUE(look_for_key(tree, 5, {"4", "5", "45", "67", "0123", "4567", "01234567"}));
+    ASSERT_TRUE(look_for_key(tree, 6, {"6", "7", "45", "67", "0123", "4567", "01234567"}));
 }

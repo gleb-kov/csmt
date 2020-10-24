@@ -205,11 +205,7 @@ private:
 
     bool collect_audit_path(const ptr_t &root, uint64_t key, proof_t &audit_path) const {
         if (root->is_leaf()) {
-            if (root->get_key() == key) {
-                audit_path.push_back(root->get_value());
-                return true;
-            }
-            return false;
+            return root->get_key() == key;
         }
 
         uint64_t l_key = root->left_->get_key();
@@ -217,12 +213,12 @@ private:
 
         if (root->left_->is_leaf() && l_key == key) {
             audit_path.push_back(root->left_->get_value());
-            audit_path.push_back(root->get_value());
+            audit_path.push_back(root->right_->get_value());
             return true;
         }
         if (root->right_->is_leaf() && r_key == key) {
+            audit_path.push_back(root->left_->get_value());
             audit_path.push_back(root->right_->get_value());
-            audit_path.push_back(root->get_value());
             return true;
         }
 
@@ -231,12 +227,14 @@ private:
 
         if (l_dist < r_dist) {
             if (collect_audit_path(root->left_, key, audit_path)) {
-                audit_path.push_back(root->get_value());
+                audit_path.push_back(root->left_->get_value());
+                audit_path.push_back(root->right_->get_value());
                 return true;
             }
         } else if (l_dist > r_dist) {
             if (collect_audit_path(root->right_, key, audit_path)) {
-                audit_path.push_back(root->get_value());
+                audit_path.push_back(root->left_->get_value());
+                audit_path.push_back(root->right_->get_value());
                 return true;
             }
         }
@@ -318,7 +316,9 @@ public:
     [[nodiscard]] proof_t membership_proof(uint64_t key) const {
         if (root_) {
             proof_t audit_path;
-            collect_audit_path(root_, key, audit_path);
+            if (collect_audit_path(root_, key, audit_path)) {
+                audit_path.push_back(root_->get_value());
+            }
             return audit_path;
         } else {
             return {};
