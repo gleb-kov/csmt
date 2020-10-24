@@ -19,7 +19,7 @@ constexpr size_t DEF_KEYS = 50'000;
     using tree_type = Csmt<HashPolicySHA256>;
     const char *POLICY_STR = "SHA256";
 #elif defined(SHA256_TREE_POLICY)
-    using tree_type = Csmt<HashPolicySHA256>;
+    using tree_type = Csmt<HashPolicySHA256Tree>;
     const char *POLICY_STR = "SHA256_TREE";
 #elif
     using tree_type = Csmt<>;
