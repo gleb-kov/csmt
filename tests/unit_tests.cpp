@@ -5,6 +5,53 @@
 
 #include <functional>
 
+TEST(sha256, correct) {
+    std::vector<std::pair<std::string, std::string>> codes{
+            {"",       "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+            {"banana", "b493d48364afe44d11c0165cf470a4164d1e2609911ef998be868d46ade3de4e"},
+            {"cat",    "77af778b51abd4a3c51c5ddd97204a9c3ae614ebccb75a606c3b6865aed6744e"},
+            {"polina", "b34cd4a97cfc6649655a00bfa9cd3fb3acb5f73e59498ee0475b4547db516131"}
+    };
+
+    for (auto const &pair: codes) {
+        ASSERT_EQ(SHA256::hash(pair.first), pair.second);
+    }
+}
+
+TEST(log, correct) {
+    // implementation from csmt private function
+    std::function<uint64_t(uint64_t)> log_impl = [](uint64_t num) {
+#ifdef __GNUC__
+        return ((unsigned)(8 * sizeof(unsigned long long) - __builtin_clzll((num)) - 1));
+#else
+        static constexpr uint64_t table[64] = {
+            0,  58, 1,  59, 47, 53, 2,  60, 39, 48, 27, 54, 33, 42, 3,  61,
+            51, 37, 40, 49, 18, 28, 20, 55, 30, 34, 11, 43, 14, 22, 4,  62,
+            57, 46, 52, 38, 26, 32, 41, 50, 36, 17, 19, 29, 10, 13, 21, 56,
+            45, 25, 31, 35, 16, 9,  12, 44, 24, 15, 8,  23, 7,  6,  5,  63};
+        num |= num >> 1u;
+        num |= num >> 2u;
+        num |= num >> 4u;
+        num |= num >> 8u;
+        num |= num >> 16u;
+        num |= num >> 32u;
+        return table[(num * 0x03f6eaf2cd271461) >> 58u];
+#endif
+    };
+
+    uint64_t key = 1;
+    uint64_t next_key = 2;
+    uint64_t power = 0;
+
+    for (; key < (1ull << 15u); key++) {
+        if (key == next_key) {
+            next_key <<= 1u;
+            power++;
+        }
+        ASSERT_EQ(log_impl(key), power);
+    }
+}
+
 TEST(basic, blank_erase) {
     Csmt<> tree;
 
