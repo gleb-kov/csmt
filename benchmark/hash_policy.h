@@ -24,4 +24,4 @@ struct HashPolicySHA256Tree {
 };
 
 
-#endif //CSMT_HASH_POLICY_H
+#endif // CSMT_HASH_POLICY_H

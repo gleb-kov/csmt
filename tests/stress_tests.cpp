@@ -51,7 +51,7 @@ TEST(stress, spam_erase) {
         tree.insert(key, value_gen(key));
     }
 
-    for (uint64_t key: keys) {
+    for (uint64_t key : keys) {
         EXPECT_NO_THROW(tree.erase(key));
         ASSERT_FALSE(tree.contains(key));
     }
@@ -81,7 +81,7 @@ TEST(stress, spam_membership_proof) {
         EXPECT_NO_THROW(auto proof = tree.membership_proof(key));
     }
 
-    for (uint64_t key: keys) {
+    for (uint64_t key : keys) {
         EXPECT_NO_THROW(auto proof = tree.membership_proof(key));
     }
 }
@@ -98,10 +98,10 @@ TEST(stress, comeback) {
     for (size_t key_index = 0; key_index < KEYS; ++key_index) {
         tree.insert(key_index, value_gen(key_index));
     }
-    for (size_t key_index= KEYS / 2; key_index < KEYS; ++key_index) {
+    for (size_t key_index = KEYS / 2; key_index < KEYS; ++key_index) {
         ASSERT_TRUE(tree.contains(key_index));
     }
-    for (size_t key_index= 0; key_index < KEYS / 2; ++key_index) {
+    for (size_t key_index = 0; key_index < KEYS / 2; ++key_index) {
         ASSERT_TRUE(tree.contains(key_index));
     }
     for (size_t key_index = 0; key_index < KEYS; key_index += 3) {
@@ -117,7 +117,7 @@ TEST(stress, comeback) {
     for (size_t key_index = 0; key_index < KEYS; key_index += 3) {
         tree.insert(key_index, value_gen(key_index));
     }
-    for (size_t key_index= 0; key_index < KEYS; ++key_index) {
+    for (size_t key_index = 0; key_index < KEYS; ++key_index) {
         ASSERT_TRUE(tree.contains(key_index));
     }
 }

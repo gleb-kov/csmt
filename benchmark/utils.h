@@ -1,5 +1,5 @@
-#ifndef CSMT_UTILS_H
-#define CSMT_UTILS_H
+#ifndef CSMT_BENCH_UTILS_H
+#define CSMT_BENCH_UTILS_H
 
 #include <chrono>
 #include <string>
@@ -23,10 +23,9 @@ namespace bench_utils {
     inline void do_not_optimize(T &val) {
         asm volatile("" : "+m,r"(val) : : "memory");
     }
-}
+} // namespace bench_utils
 
 namespace time_utils {
-
     using benchmark_clock_t = std::chrono::high_resolution_clock;
     using benchmark_duration_t = std::chrono::milliseconds;
 
@@ -88,8 +87,7 @@ namespace time_utils {
             return duration<T>(snapshot_, helper);
         }
     };
-
-}
+} // namespace time_utils
 
 namespace string_utils {
     std::string generate_random_string(size_t size) {
@@ -110,6 +108,6 @@ namespace string_utils {
         }
         return result;
     }
-}
+} // namespace string_utils
 
-#endif // CSMT_UTILS_H
+#endif // CSMT_BENCH_UTILS_H

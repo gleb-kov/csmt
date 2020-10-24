@@ -4,18 +4,18 @@
 #include "utils.h"
 
 #include <algorithm>
-#include <string>
 #include <random>
+#include <string>
 #include <unordered_set>
 #include <vector>
 
 class CsmtStructuralWrapper : public Csmt<HashPolicySHA256Tree> {
 public:
-
-    typedef std::pair<size_t, std::string> tree_line;
+    using tree_line = std::pair<size_t, std::string>;
 
 private:
-    static bool check_structure(std::unique_ptr<Node> const &tree, std::vector<tree_line> const &repr, size_t &line) {
+    static bool check_structure(std::unique_ptr<Node> const &tree,
+                                std::vector<tree_line> const &repr, size_t &line) {
         if (line >= repr.size()) {
             return false;
         }
@@ -116,7 +116,7 @@ TEST(structural, history_independence_large) {
 
     for (size_t i = 0; i < TREES; i++) {
         std::shuffle(keys.begin(), keys.end(), generator);
-        for (uint64_t key: keys) {
+        for (uint64_t key : keys) {
             trees[i].insert(key, value_gen(key));
         }
     }
@@ -178,7 +178,7 @@ TEST(structural, full_structure_large) {
             2168736525757624ull, 3268768623546567234ull,
             2676886ull, 0ull, 126726767ull, 1224ull,
     };
-    for (uint64_t key: keys) {
+    for (uint64_t key : keys) {
         tree.insert(key, value_gen(key));
     }
 

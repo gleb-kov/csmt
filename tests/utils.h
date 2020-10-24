@@ -1,5 +1,5 @@
-#ifndef CSMT_UTILS_H
-#define CSMT_UTILS_H
+#ifndef CSMT_TEST_UTILS_H
+#define CSMT_TEST_UTILS_H
 
 #include "src/csmt.h"
 
@@ -8,7 +8,7 @@ struct IdentityHashPolicy {
         return leaf_value;
     }
 
-    static std::string merge_hash(const std::string& lhs, const std::string& rhs) {
+    static std::string merge_hash(const std::string &lhs, const std::string &rhs) {
         return lhs + rhs;
     }
 };
@@ -23,4 +23,4 @@ bool look_for_key(const Csmt<HP, HT, VT> &tree, uint64_t key, const std::deque<H
     return tree.membership_proof(key) == proof;
 }
 
-#endif //CSMT_UTILS_H
+#endif // CSMT_TEST_UTILS_H
