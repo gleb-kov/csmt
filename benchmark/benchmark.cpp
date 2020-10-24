@@ -6,9 +6,9 @@
 #include <iostream>
 
 /***  choose hash policy for benchmarks ***/
-// #define DEFAULT_POLICY
+#define DEFAULT_POLICY
 // #define SHA256_POLICY
-#define SHA256_TREE_POLICY
+// #define SHA256_TREE_POLICY
 
 constexpr size_t DEF_KEYS = 50'000;
 
@@ -18,7 +18,6 @@ constexpr size_t DEF_KEYS = 50'000;
 #elif defined(SHA256_POLICY)
     using tree_type = Csmt<HashPolicySHA256>;
     const char *POLICY_STR = "SHA256";
-    constexpr size_t DEF_KEYS = 10'000;
 #elif defined(SHA256_TREE_POLICY)
     using tree_type = Csmt<HashPolicySHA256>;
     const char *POLICY_STR = "SHA256_TREE";

@@ -1,17 +1,15 @@
 #include "benchmark/hash_policy.h"
 #include "contrib/gtest/gtest.h"
 #include "src/csmt.h"
-#include "tests/common/test_utils.h"
+#include "utils.h"
 
-#include <string>
 #include <algorithm>
-#include <vector>
+#include <string>
+#include <random>
 #include <unordered_set>
+#include <vector>
 
-using namespace test;
-
-class Csmt_debug : public Csmt<HashPolicySHA256Tree> {
-
+class CsmtStructuralWrapper : public Csmt<HashPolicySHA256Tree> {
 public:
 
     typedef std::pair<size_t, std::string> tree_line;
@@ -68,62 +66,78 @@ public:
         return check_structure(root_, representation, line);
     }
 
-    static bool check_same_structure(Csmt_debug const &tree1, Csmt_debug const &tree2) {
+    static bool check_same_structure(CsmtStructuralWrapper const &tree1, CsmtStructuralWrapper const &tree2) {
         return check_same_structure(tree1.root_, tree2.root_);
     }
 
-    static size_t count_memory(Csmt_debug const &tree) {
+    static size_t count_memory(CsmtStructuralWrapper const &tree) {
         return count_memory(tree.root_);
     }
 
 };
 
 TEST(structural, history_independence_three) {
-    Csmt_debug tree1;
-    Csmt_debug tree2;
+    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
+        return "VALUE" + std::to_string(key_index);
+    };
 
-    tree1.insert(1, default_value_gen(1));
-    tree1.insert(2, default_value_gen(2));
-    tree1.insert(3, default_value_gen(3));
+    CsmtStructuralWrapper tree1;
+    CsmtStructuralWrapper tree2;
 
-    tree2.insert(3, default_value_gen(3));
-    tree2.insert(2, default_value_gen(2));
-    tree2.insert(1, default_value_gen(1));
+    tree1.insert(1, value_gen(1));
+    tree1.insert(2, value_gen(2));
+    tree1.insert(3, value_gen(3));
 
-    ASSERT_TRUE(Csmt_debug::check_same_structure(tree1, tree2));
+    tree2.insert(3, value_gen(3));
+    tree2.insert(2, value_gen(2));
+    tree2.insert(1, value_gen(1));
+
+    ASSERT_TRUE(CsmtStructuralWrapper::check_same_structure(tree1, tree2));
 }
 
 TEST(structural, history_independence_large) {
     constexpr size_t SIZE = 1000;
     constexpr size_t TREES = 10;
 
-    std::vector<uint64_t> keys;
+    std::random_device random_device;
+    std::mt19937 generator(random_device());
+
     std::uniform_int_distribution<uint64_t> key_gen(0, std::numeric_limits<uint64_t>::max());
+    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
+        return "VALUE" + std::to_string(key_index);
+    };
+
+    std::vector<CsmtStructuralWrapper> trees(TREES);
+    std::vector<uint64_t> keys;
+
     for (size_t i = 0; i < SIZE; i++) {
-        keys.push_back(key_gen(rnd()));
+        keys.push_back(key_gen(generator));
     }
 
-    std::vector<Csmt_debug> trees(TREES);
     for (size_t i = 0; i < TREES; i++) {
-        std::shuffle(keys.begin(), keys.end(), rnd());
+        std::shuffle(keys.begin(), keys.end(), generator);
         for (uint64_t key: keys) {
-            trees[i].insert(key, default_value_gen(key));
+            trees[i].insert(key, value_gen(key));
         }
     }
 
     for (size_t i = 1; i < TREES; i++) {
-        ASSERT_TRUE(Csmt_debug::check_same_structure(trees[i - 1], trees[i]));
+        ASSERT_TRUE(CsmtStructuralWrapper::check_same_structure(trees[i - 1], trees[i]));
     }
 }
 
 TEST(structural, full_structure_3_left) {
-    Csmt_debug tree_left;
+    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
+        return "VALUE" + std::to_string(key_index);
+    };
 
-    tree_left.insert(0, default_value_gen(0));
-    tree_left.insert(1, default_value_gen(1));
-    tree_left.insert(2, default_value_gen(2));
+    CsmtStructuralWrapper tree_left;
 
-    ASSERT_TRUE(tree_left.check_structure(std::vector<Csmt_debug::tree_line>{
+    tree_left.insert(0, value_gen(0));
+    tree_left.insert(1, value_gen(1));
+    tree_left.insert(2, value_gen(2));
+
+    ASSERT_TRUE(tree_left.check_structure(std::vector<CsmtStructuralWrapper::tree_line>{
             {0, "18cc5a364e2a67b12e295f8aa0e155542325c024bdc2b8fd0d011ff2739dbdce"},
             {1, "9e7fc8c40b8b14155a3e62c60e34f97c5b025106b89b8520b2382904e7517e5b"},
             {2, "94691a6dca8d9b3529a9ba48bd482eace32358548c0dfab12bfa5f860a1d627d"},
@@ -133,13 +147,17 @@ TEST(structural, full_structure_3_left) {
 }
 
 TEST(structural, full_structure_3_right) {
-    Csmt_debug tree_right;
+    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
+        return "VALUE" + std::to_string(key_index);
+    };
 
-    tree_right.insert(1, default_value_gen(1));
-    tree_right.insert(2, default_value_gen(2));
-    tree_right.insert(3, default_value_gen(3));
+    CsmtStructuralWrapper tree_right;
 
-    ASSERT_TRUE(tree_right.check_structure(std::vector<Csmt_debug::tree_line>{
+    tree_right.insert(1, value_gen(1));
+    tree_right.insert(2, value_gen(2));
+    tree_right.insert(3, value_gen(3));
+
+    ASSERT_TRUE(tree_right.check_structure(std::vector<CsmtStructuralWrapper::tree_line>{
             {0, "37021bc02e7bdbb3f9f36a2b913ea449f380b7264cc41c90ef313348835480f1"},
             {1, "36b78f882885cf09ea371be0c69e23567382e4a3ca797899f0400e72b14d0028"},
             {1, "561bb32001f03d225e0ea618e1ee113414197f3aa09e5409bd5f14375db2b07f"},
@@ -149,7 +167,11 @@ TEST(structural, full_structure_3_right) {
 }
 
 TEST(structural, full_structure_large) {
-    Csmt_debug tree;
+    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
+        return "VALUE" + std::to_string(key_index);
+    };
+
+    CsmtStructuralWrapper tree;
 
     std::vector<uint64_t> keys{
             1ull, 1000ull, 121322ull, 127837878213ull,
@@ -157,10 +179,10 @@ TEST(structural, full_structure_large) {
             2676886ull, 0ull, 126726767ull, 1224ull,
     };
     for (uint64_t key: keys) {
-        tree.insert(key, default_value_gen(key));
+        tree.insert(key, value_gen(key));
     }
 
-    ASSERT_TRUE(tree.check_structure(std::vector<Csmt_debug::tree_line>{
+    ASSERT_TRUE(tree.check_structure(std::vector<CsmtStructuralWrapper::tree_line>{
             {0, "512bf76b73ba4fd6c87a781dc984b1526699804ededccc6842acce94fb21b398"},
             {1, "c4dcacf404b871a35edf1dd4d510c9400255438d9ceea037e4986eaecedd5897"},
             {2, "183cabebe4c4c65115fec0abd0c445c31cc61dcada06cb32d3eb91c8fefcc2a1"},
@@ -187,20 +209,27 @@ TEST(structural, low_memory_check) {
     constexpr size_t OPERATIONS = 100000;
     constexpr size_t EACH = 10000;
 
-    Csmt_debug tree;
+    std::random_device random_device;
+    std::mt19937 generator(random_device());
+
     std::uniform_int_distribution<uint64_t> key_gen(0, std::numeric_limits<uint64_t>::max());
+    std::function<std::string(uint64_t)> value_gen = [](uint64_t key_index) {
+        return "VALUE" + std::to_string(key_index);
+    };
+
+    CsmtStructuralWrapper tree;
     std::unordered_set<uint64_t> keys;
 
     for (size_t iter = 0; iter < OPERATIONS; iter++) {
-        uint64_t key = key_gen(rnd());
+        uint64_t key = key_gen(generator);
         while (keys.count(key)) {
-            key = key_gen(rnd());
+            key = key_gen(generator);
         }
         keys.insert(key);
-        tree.insert(key, default_value_gen(key));
+        tree.insert(key, value_gen(key));
 
         if (iter % EACH == 0) {
-            ASSERT_LE(Csmt_debug::count_memory(tree), 2 * iter + 1);
+            ASSERT_LE(CsmtStructuralWrapper::count_memory(tree), 2 * iter + 1);
         }
     }
 }
